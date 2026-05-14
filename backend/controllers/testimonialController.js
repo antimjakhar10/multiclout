@@ -2,7 +2,7 @@ const Testimonial = require("../models/Testimonial");
 
 exports.addTestimonial = async (req, res) => {
   try {
-    const { name, city, text, rating, image, active, order } = req.body;
+    const { name, city, text, rating, active, order } = req.body;
 
     if (!name || !text) {
       return res.status(400).json({
@@ -11,14 +11,16 @@ exports.addTestimonial = async (req, res) => {
       });
     }
 
+    const image = req.file ? `/uploads/${req.file.filename}` : "";
+
     const testimonial = await Testimonial.create({
-      name,
-      city,
-      text,
-      rating,
+      name: name.trim(),
+      city: (city || "").trim(),
+      text: text.trim(),
+      rating: Number(rating || 5),
       image,
-      active,
-      order,
+      active: active === "false" ? false : true,
+      order: Number(order || 0),
     });
 
     res.status(201).json({
@@ -103,11 +105,7 @@ exports.getSingleTestimonial = async (req, res) => {
 
 exports.updateTestimonial = async (req, res) => {
   try {
-    const testimonial = await Testimonial.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const testimonial = await Testimonial.findById(req.params.id);
 
     if (!testimonial) {
       return res.status(404).json({
@@ -115,6 +113,24 @@ exports.updateTestimonial = async (req, res) => {
         message: "Testimonial not found",
       });
     }
+
+    const { name, city, text, rating, active, order } = req.body;
+
+    if (req.file) {
+      testimonial.image = `/uploads/${req.file.filename}`;
+    }
+
+    testimonial.name = name !== undefined ? name.trim() : testimonial.name;
+    testimonial.city = city !== undefined ? city.trim() : testimonial.city;
+    testimonial.text = text !== undefined ? text.trim() : testimonial.text;
+    testimonial.rating =
+      rating !== undefined ? Number(rating) : testimonial.rating;
+    testimonial.active =
+      active === undefined ? testimonial.active : active === "false" ? false : true;
+    testimonial.order =
+      order !== undefined ? Number(order) : testimonial.order;
+
+    await testimonial.save();
 
     res.status(200).json({
       success: true,

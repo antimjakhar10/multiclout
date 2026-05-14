@@ -9,12 +9,15 @@ const {
   deleteReason,
 } = require("../controllers/reasonController");
 
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { protectAdmin } = require("../middleware/authMiddleware");
 
+// public
 router.get("/", getReasons);
-router.get("/admin/all", protect, adminOnly, getAllReasonsAdmin);
-router.post("/add", protect, adminOnly, addReason);
-router.put("/:id", protect, adminOnly, updateReason);
-router.delete("/:id", protect, adminOnly, deleteReason);
+
+// admin
+router.get("/admin/all", protectAdmin, getAllReasonsAdmin);
+router.post("/add", protectAdmin, addReason);
+router.put("/:id", protectAdmin, updateReason);
+router.delete("/:id", protectAdmin, deleteReason);
 
 module.exports = router;

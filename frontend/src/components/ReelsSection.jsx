@@ -1,270 +1,391 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { FiPlay } from "react-icons/fi";
+import {
+  FiPlay,
+  FiYoutube,
+  FiTrendingUp,
+  FiBriefcase,
+  FiActivity,
+  FiSearch,
+} from "react-icons/fi";
+import {
+  AiOutlineEye,
+  AiOutlineHeart,
+  AiOutlineShareAlt,
+} from "react-icons/ai";
+import { HiOutlineAcademicCap } from "react-icons/hi";
+import { BsInstagram, BsCameraVideo, BsBank } from "react-icons/bs";
+import { MdOutlineHealthAndSafety, MdOutlineAutoGraph } from "react-icons/md";
+import { RiMoneyDollarCircleLine, RiBookOpenLine } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { formatSocialCount } from "../utils/formatCount";
+import { API, getImageUrl } from "../utils/videoHelpers";
+
+function normalizeText(value = "") {
+  return value.trim().toLowerCase();
+}
+
+function getCategoryIcon(category = "") {
+  const key = normalizeText(category);
+  const iconClass = "text-[15px] sm:text-base";
+
+  if (key.includes("youtube")) return <FiYoutube className={iconClass} />;
+  if (key.includes("instagram")) return <BsInstagram className={iconClass} />;
+  if (key.includes("business")) return <FiBriefcase className={iconClass} />;
+  if (key.includes("finance")) return <BsBank className={iconClass} />;
+  if (key.includes("share market"))
+    return <MdOutlineAutoGraph className={iconClass} />;
+  if (key.includes("stock")) return <FiTrendingUp className={iconClass} />;
+  if (key.includes("health"))
+    return <MdOutlineHealthAndSafety className={iconClass} />;
+  if (key.includes("knowledge"))
+    return <RiBookOpenLine className={iconClass} />;
+  if (key.includes("motivation"))
+    return <HiOutlineAcademicCap className={iconClass} />;
+  if (key.includes("video editing"))
+    return <BsCameraVideo className={iconClass} />;
+  if (key.includes("earning"))
+    return <RiMoneyDollarCircleLine className={iconClass} />;
+  if (key.includes("career")) return <FiActivity className={iconClass} />;
+
+  return <HiOutlineAcademicCap className={iconClass} />;
+}
 
 function ReelsSection() {
-  const [reels, setReels] = useState([]);
+  const [videos, setVideos] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All Categories");
+  const [categorySearch, setCategorySearch] = useState("");
 
-  const scrollRef = useRef(null);
-  const autoScrollRef = useRef(null);
-  const isDraggingRef = useRef(false);
-  const startXRef = useRef(0);
-  const scrollLeftRef = useRef(0);
-  const pauseAutoRef = useRef(false);
-
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-  const IMAGE_BASE = API_BASE.endsWith("/api")
-    ? API_BASE.replace("/api", "")
-    : API_BASE;
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchReels = async () => {
+    const fetchVideosData = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${API_BASE}/reels`);
-        setReels(res.data.reels || []);
+
+        const res = await axios.get(`${API}/videos/watch-page`);
+        const result = res.data || {};
+
+        const topPicks = result.topPicks || [];
+        const fetchedCategories = result.categories || [];
+
+        setVideos(topPicks);
+
+        const safeCategories = [
+          "All Categories",
+          ...fetchedCategories
+            .map((item) => item?.name?.trim())
+            .filter(Boolean)
+            .filter((value, index, arr) => arr.indexOf(value) === index),
+        ];
+
+        setAllCategories(safeCategories);
       } catch (error) {
-        console.error("Error fetching reels", error);
+        console.error("Error fetching homepage videos", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchReels();
-  }, [API_BASE]);
+    fetchVideosData();
+  }, []);
 
-  const dynamicCategories = useMemo(() => {
-    const cleanCategories = reels
-      .map((r) => r.category?.trim())
-      .filter(Boolean);
+  const searchedCategories = useMemo(() => {
+    if (!categorySearch.trim()) return allCategories;
 
-    return ["All Categories", ...new Set(cleanCategories)];
-  }, [reels]);
-
-  const filteredReels = useMemo(() => {
-    if (activeCategory === "All Categories") return reels;
-
-    return reels.filter(
-      (r) =>
-        r.category?.trim()?.toLowerCase() ===
-        activeCategory.trim().toLowerCase()
+    return allCategories.filter((cat) =>
+      normalizeText(cat).includes(normalizeText(categorySearch)),
     );
-  }, [reels, activeCategory]);
+  }, [allCategories, categorySearch]);
 
-  const displayReels = useMemo(() => {
-    if (!filteredReels.length) return [];
-    return [...filteredReels, ...filteredReels];
-  }, [filteredReels]);
+  const filteredVideos = useMemo(() => {
+    if (activeCategory === "All Categories") return videos;
 
-  useEffect(() => {
-    const container = scrollRef.current;
-    if (!container || filteredReels.length === 0) return;
+    return videos.filter(
+      (video) =>
+        normalizeText(video.category) === normalizeText(activeCategory),
+    );
+  }, [videos, activeCategory]);
 
-    pauseAutoRef.current = false;
+  const marqueeCategories = useMemo(() => {
+    return allCategories.filter(
+      (cat) => normalizeText(cat) !== "all categories",
+    );
+  }, [allCategories]);
 
-    const autoScroll = () => {
-      if (!container || pauseAutoRef.current) return;
+  const rowOne = useMemo(() => {
+    const half = Math.ceil(marqueeCategories.length / 2);
+    return marqueeCategories.slice(0, half);
+  }, [marqueeCategories]);
 
-      container.scrollLeft += 0.45;
+  const rowTwo = useMemo(() => {
+    const half = Math.ceil(marqueeCategories.length / 2);
+    return marqueeCategories.slice(half);
+  }, [marqueeCategories]);
 
-      const halfWidth = container.scrollWidth / 2;
-      if (container.scrollLeft >= halfWidth) {
-        container.scrollLeft = 0;
-      }
-    };
-
-    autoScrollRef.current = setInterval(autoScroll, 16);
-
-    return () => {
-      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
-    };
-  }, [filteredReels]);
-
-  const handleMouseDown = (e) => {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    isDraggingRef.current = true;
-    pauseAutoRef.current = true;
-    startXRef.current = e.pageX - container.offsetLeft;
-    scrollLeftRef.current = container.scrollLeft;
-  };
-
-  const handleMouseMove = (e) => {
-    const container = scrollRef.current;
-    if (!container || !isDraggingRef.current) return;
-
-    e.preventDefault();
-    const x = e.pageX - container.offsetLeft;
-    const walk = (x - startXRef.current) * 1.2;
-    container.scrollLeft = scrollLeftRef.current - walk;
-
-    const halfWidth = container.scrollWidth / 2;
-    if (container.scrollLeft >= halfWidth) {
-      container.scrollLeft = 0;
-      scrollLeftRef.current = 0;
-      startXRef.current = x;
+  const openVideoDetail = (video) => {
+    if (video?.slug) {
+      navigate(`/watch-videos/${video.slug}`);
+      return;
     }
-    if (container.scrollLeft <= 0) {
-      container.scrollLeft = halfWidth;
-      scrollLeftRef.current = halfWidth;
-      startXRef.current = x;
-    }
-  };
 
-  const handleMouseUp = () => {
-    isDraggingRef.current = false;
-    setTimeout(() => {
-      pauseAutoRef.current = false;
-    }, 800);
-  };
-
-  const handleMouseLeave = () => {
-    isDraggingRef.current = false;
-    setTimeout(() => {
-      pauseAutoRef.current = false;
-    }, 800);
+    console.warn("Video slug missing:", video);
   };
 
   return (
-    <section className="top-theme-bg py-16 md:py-20 px-4 md:px-6 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#08111f]/30 pointer-events-none"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-6xl h-[260px] bg-[#1f6a83]/10 blur-[130px] pointer-events-none rounded-full"></div>
+    <section className="relative overflow-hidden bg-black px-4 py-10 sm:px-6 md:py-12">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(45,112,132,0.18),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(77,154,151,0.10),transparent_28%)]" />
 
-      <div className="container-custom relative z-10">
+      <div className="relative mx-auto max-w-[1440px]">
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={{ opacity: 0, y: 22 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.45 }}
-          className="text-center mb-8"
+          className="mb-8 text-center"
         >
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-3">
-            What&apos;s Waiting For You?
+          <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-[#41d7c6] shadow-sm sm:text-[11px]">
+            Explore Topics
+          </span>
+
+          <h2 className="mx-auto mt-4 max-w-[800px] text-[28px] font-extrabold leading-[1.15] text-white sm:text-[36px] md:text-[46px]">
+            What&apos;s waiting for <span className="text-[#41d7c6]">you?</span>
           </h2>
-          <p className="text-slate-300 text-sm md:text-lg max-w-2xl mx-auto">
-            Daily short videos, multiple categories, and trusted mentors to help you grow faster.
+
+          <p className="mx-auto mt-3 max-w-xl text-[14px] text-slate-300 sm:text-[15px]">
+            Pick a topic and start learning from India&apos;s top mentors
           </p>
         </motion.div>
 
-        <div className="flex flex-wrap justify-center gap-3 mb-10 max-w-5xl mx-auto">
-          {dynamicCategories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 md:px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 border ${
-                activeCategory === cat
-                  ? "bg-white text-[#0b1120] border-white shadow-[0_8px_26px_rgba(255,255,255,0.16)]"
-                  : "bg-transparent text-slate-200 border-slate-600 hover:border-slate-400 hover:text-white"
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        <div className="mx-auto mb-6 max-w-[520px]">
+          <div className="relative">
+            <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+              <FiSearch size={18} />
+            </span>
+
+            <input
+              type="text"
+              value={categorySearch}
+              onChange={(e) => setCategorySearch(e.target.value)}
+              placeholder="Search categories..."
+              className="h-[50px] w-full rounded-full border border-white/10 bg-white/5 pl-12 pr-4 text-[15px] text-white outline-none transition placeholder:text-slate-500 focus:border-[#41d7c6]/50 focus:bg-white/[0.07]"
+            />
+          </div>
+
+          {categorySearch.trim() && searchedCategories.length > 0 && (
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              {searchedCategories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => {
+                    setActiveCategory(cat);
+                    setCategorySearch("");
+                  }}
+                  className={`inline-flex h-[44px] items-center gap-2 rounded-full border px-4 text-[13px] font-semibold transition-all ${
+                    normalizeText(activeCategory) === normalizeText(cat)
+                      ? "border-[#41d7c6] bg-[#41d7c6] text-[#07111a]"
+                      : "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
+                  }`}
+                >
+                  <span>{getCategoryIcon(cat)}</span>
+                  <span>{cat}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {!categorySearch.trim() && (
+          <div className="mb-8 space-y-3 overflow-hidden px-2 sm:px-4">
+            <div className="marquee-wrapper">
+              <div className="marquee-track">
+                {[...rowOne, ...rowOne, ...rowOne].map((cat, index) => (
+                  <button
+                    key={`row1-${cat}-${index}`}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={`inline-flex h-[44px] items-center gap-2 rounded-full border px-4 text-[13px] font-semibold whitespace-nowrap transition-all ${
+                      normalizeText(activeCategory) === normalizeText(cat)
+                        ? "border-[#41d7c6] bg-[#41d7c6] text-[#07111a] shadow-[0_10px_25px_rgba(65,215,198,0.18)]"
+                        : "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="text-[15px]">{getCategoryIcon(cat)}</span>
+                    <span>{cat}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="marquee-wrapper">
+              <div className="marquee-track marquee-track-reverse">
+                {[...rowTwo, ...rowTwo, ...rowTwo].map((cat, index) => (
+                  <button
+                    key={`row2-${cat}-${index}`}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className={`inline-flex h-[46px] items-center gap-2 rounded-full border px-5 text-[14px] font-semibold whitespace-nowrap transition-all ${
+                      normalizeText(activeCategory) === normalizeText(cat)
+                        ? "border-[#41d7c6] bg-[#41d7c6] text-[#07111a] shadow-[0_10px_25px_rgba(65,215,198,0.18)]"
+                        : "border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="text-[15px]">{getCategoryIcon(cat)}</span>
+                    <span>{cat}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="mb-6 flex items-center gap-4">
+          <h3 className="whitespace-nowrap text-[28px] font-extrabold text-white sm:text-[34px]">
+            Trending Videos
+          </h3>
+          <div className="h-px w-full bg-white/10" />
+          <span className="whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-[#41d7c6]">
+            {filteredVideos.length} videos
+          </span>
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-slate-400 font-medium">
-            Loading reels...
+          <div className="py-12 text-center text-base font-medium text-slate-400">
+            Loading videos...
           </div>
-        ) : filteredReels.length === 0 ? (
-          <div className="text-center py-12 text-slate-400 font-medium">
-            No reels available for this category.
+        ) : filteredVideos.length === 0 ? (
+          <div className="py-12 text-center text-base font-medium text-slate-400">
+            No videos available for this category.
           </div>
         ) : (
-          <div className="relative">
-            <div
-              ref={scrollRef}
-              onMouseEnter={() => {
-                pauseAutoRef.current = true;
-              }}
-              onMouseLeave={handleMouseLeave}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              className="flex gap-4 overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none py-2"
-            >
-              {displayReels.map((reel, idx) => {
-                const thumbnail = reel.thumbnail?.startsWith("http")
-                  ? reel.thumbnail
-                  : `${IMAGE_BASE}/${reel.thumbnail}`;
-
-                return (
-                  <motion.div
-                    key={`${reel._id || idx}-${idx}`}
-                    initial={{ opacity: 0, y: 18 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.35 }}
-                    className="shrink-0 w-[170px] sm:w-[180px] md:w-[190px] lg:w-[200px]"
+          <div
+  className="overflow-x-auto overflow-y-hidden pb-3 no-scrollbar"
+  onWheel={(e) => {
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      e.preventDefault();
+      window.scrollBy({
+        top: e.deltaY,
+        left: 0,
+        behavior: "auto",
+      });
+    }
+  }}
+>
+  <div className="flex min-w-max gap-4 lg:gap-5">
+              {filteredVideos.map((video, idx) => (
+                <div
+  key={`${video._id || idx}-${idx}`}
+  className="group relative shrink-0 basis-[200px] max-w-[272px] sm:basis-[255px] md:basis-[265px] lg:basis-[272px] xl:basis-[272px]"
+>
+                  <button
+                    type="button"
+                    onClick={() => openVideoDetail(video)}
+                    className="relative block h-[360px] w-full overflow-hidden rounded-[28px] bg-[#0c1726] text-left shadow-[0_18px_40px_rgba(17,41,74,0.18)] transition-shadow duration-300 hover:shadow-[0_24px_55px_rgba(17,41,74,0.26)] sm:h-[430px]"
                   >
-                    <div className="relative h-[270px] sm:h-[285px] md:h-[300px] rounded-[24px] overflow-hidden bg-[#07101d] border border-white/10 shadow-[0_14px_40px_rgba(0,0,0,0.24)] group cursor-pointer">
-                      <img
-                        src={thumbnail}
-                        alt={reel.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        draggable="false"
-                      />
+                    <img
+                      src={getImageUrl(video.thumbnail)}
+                      alt={video.title}
+                      loading="lazy"
+                      draggable="false"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050816] via-[#050816]/45 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#08111d]/95 via-[#08111d]/20 to-transparent" />
 
-                      <div className="absolute top-3 left-3">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/45 backdrop-blur-md border border-white/15 text-white text-[10px] font-semibold">
-                          <FiPlay size={10} fill="currentColor" />
-                          {reel.duration || "Short"}
+                    <div className="absolute left-3 top-3 flex items-center gap-2">
+                      <span className="rounded-full bg-[#16365e] px-3 py-1.5 text-[12px] font-bold text-white shadow-sm">
+                        {video.duration || "2 mins"}
+                      </span>
+                    </div>
+
+                    <div className="absolute right-3 top-3">
+                      <span className="rounded-full bg-[#19b9de] px-3 py-1.5 text-[12px] font-bold text-white shadow-sm">
+                        {video.category || "Video"}
+                      </span>
+                    </div>
+
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-white/20 text-white backdrop-blur-md shadow-lg">
+                        <FiPlay size={22} className="ml-0.5" />
+                      </span>
+                    </div>
+
+                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                      <div className="flex items-center justify-between gap-2 px-1 text-white">
+                        <span className="flex items-center gap-1.5 text-[13px] font-semibold text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
+                          <AiOutlineEye size={17} />
+                          {formatSocialCount(video.views)}
+                        </span>
+
+                        <span className="flex items-center gap-1.5 text-[13px] font-semibold text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
+                          <AiOutlineHeart size={17} />
+                          {formatSocialCount(video.likes)}
+                        </span>
+
+                        <span className="flex items-center gap-1.5 text-[13px] font-semibold text-white/95 drop-shadow-[0_2px_6px_rgba(0,0,0,0.45)]">
+                          <AiOutlineShareAlt size={17} />
+                          {formatSocialCount(video.shares)}
                         </span>
                       </div>
-
-                      {reel.category && (
-                        <div className="absolute top-3 right-3">
-                          <span className="px-2.5 py-1 rounded-full bg-teal-500/15 backdrop-blur-md border border-teal-300/20 text-teal-100 text-[10px] font-semibold line-clamp-1 max-w-[90px]">
-                            {reel.category}
-                          </span>
-                        </div>
-                      )}
-
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-2xl">
-                          <FiPlay
-                            size={18}
-                            className="text-white ml-0.5"
-                            fill="currentColor"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <h3 className="text-white font-extrabold text-lg leading-tight line-clamp-3 mb-3">
-                          {reel.title}
-                        </h3>
-
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="w-10 h-1 rounded-full bg-teal-400 shadow-[0_0_12px_rgba(45,212,191,0.55)] group-hover:w-16 transition-all duration-300"></div>
-                          <span className="text-slate-300 text-[11px] font-medium whitespace-nowrap">
-                            Watch now
-                          </span>
-                        </div>
-                      </div>
                     </div>
-                  </motion.div>
-                );
-              })}
+                  </button>
+                </div>
+              ))}
             </div>
-
-            <style>{`
-              .no-scrollbar {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-              }
-              .no-scrollbar::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
           </div>
         )}
+
+        <style>{`
+          .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .no-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+
+          .marquee-wrapper {
+            overflow: hidden;
+            width: 100%;
+            position: relative;
+          }
+
+          .marquee-track {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            width: max-content;
+            padding-right: 16px;
+            will-change: transform;
+            animation: marqueeLeft 42s linear infinite;
+          }
+
+          .marquee-track-reverse {
+            animation: marqueeRight 42s linear infinite;
+          }
+
+          @keyframes marqueeLeft {
+            0% {
+              transform: translateX(0);
+            }
+            100% {
+              transform: translateX(-33.333%);
+            }
+          }
+
+          @keyframes marqueeRight {
+            0% {
+              transform: translateX(-33.333%);
+            }
+            100% {
+              transform: translateX(0);
+            }
+          }
+        `}</style>
       </div>
     </section>
   );

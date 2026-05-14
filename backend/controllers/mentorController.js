@@ -3,22 +3,38 @@ const Mentor = require("../models/Mentor");
 // Add mentor
 exports.addMentor = async (req, res) => {
   try {
-    const { name, role, desc, image, active, order } = req.body;
+    const {
+      name,
+      role,
+      bio,
+      desc,
+      videosCount,
+      viewsCount,
+      active,
+      order,
+    } = req.body;
 
-    if (!name || !role || !desc) {
+    const finalBio = (bio || desc || "").trim();
+
+    if (!name || !role) {
       return res.status(400).json({
         success: false,
-        message: "Name, role and description are required",
+        message: "Name and role are required",
       });
     }
 
+    const image = req.file ? `/uploads/${req.file.filename}` : "";
+
     const mentor = await Mentor.create({
-      name,
-      role,
-      desc,
+      name: name.trim(),
+      role: role.trim(),
+      bio: finalBio,
+      desc: finalBio,
       image,
-      active,
-      order,
+      videosCount: videosCount || "0",
+      viewsCount: viewsCount || "0",
+      active: active === "false" ? false : true,
+      order: Number(order || 0),
     });
 
     res.status(201).json({
@@ -43,10 +59,15 @@ exports.getMentors = async (req, res) => {
       createdAt: -1,
     });
 
+    const normalizedMentors = mentors.map((mentor) => ({
+      ...mentor.toObject(),
+      bio: mentor.bio || mentor.desc || "",
+    }));
+
     res.status(200).json({
       success: true,
-      count: mentors.length,
-      mentors,
+      count: normalizedMentors.length,
+      mentors: normalizedMentors,
     });
   } catch (error) {
     res.status(500).json({
@@ -65,10 +86,15 @@ exports.getAllMentorsAdmin = async (req, res) => {
       createdAt: -1,
     });
 
+    const normalizedMentors = mentors.map((mentor) => ({
+      ...mentor.toObject(),
+      bio: mentor.bio || mentor.desc || "",
+    }));
+
     res.status(200).json({
       success: true,
-      count: mentors.length,
-      mentors,
+      count: normalizedMentors.length,
+      mentors: normalizedMentors,
     });
   } catch (error) {
     res.status(500).json({
@@ -91,9 +117,14 @@ exports.getSingleMentor = async (req, res) => {
       });
     }
 
+    const normalizedMentor = {
+      ...mentor.toObject(),
+      bio: mentor.bio || mentor.desc || "",
+    };
+
     res.status(200).json({
       success: true,
-      mentor,
+      mentor: normalizedMentor,
     });
   } catch (error) {
     res.status(500).json({
@@ -107,23 +138,52 @@ exports.getSingleMentor = async (req, res) => {
 // Update mentor
 exports.updateMentor = async (req, res) => {
   try {
-    const updatedMentor = await Mentor.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const mentor = await Mentor.findById(req.params.id);
 
-    if (!updatedMentor) {
+    if (!mentor) {
       return res.status(404).json({
         success: false,
         message: "Mentor not found",
       });
     }
 
+    const {
+      name,
+      role,
+      bio,
+      desc,
+      videosCount,
+      viewsCount,
+      active,
+      order,
+    } = req.body;
+
+    const finalBio =
+      bio !== undefined || desc !== undefined
+        ? (bio || desc || "").trim()
+        : mentor.bio || mentor.desc || "";
+
+    if (req.file) {
+      mentor.image = `/uploads/${req.file.filename}`;
+    }
+
+    mentor.name = name !== undefined ? name.trim() : mentor.name;
+    mentor.role = role !== undefined ? role.trim() : mentor.role;
+    mentor.bio = finalBio;
+    mentor.desc = finalBio;
+    mentor.videosCount =
+      videosCount !== undefined ? videosCount : mentor.videosCount;
+    mentor.viewsCount =
+      viewsCount !== undefined ? viewsCount : mentor.viewsCount;
+    mentor.active = active === undefined ? mentor.active : active === "false" ? false : !!active;
+    mentor.order = order !== undefined ? Number(order) : mentor.order;
+
+    await mentor.save();
+
     res.status(200).json({
       success: true,
       message: "Mentor updated successfully",
-      mentor: updatedMentor,
+      mentor,
     });
   } catch (error) {
     res.status(500).json({

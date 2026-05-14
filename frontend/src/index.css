@@ -26,9 +26,16 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  font-family: "Poppins", sans-serif; /* yahi line me TopperCampus wala exact font-name bhi daal sakta hai */
-  background: #050816;
-  color: var(--text-main);
+  font-family: "Poppins", sans-serif;
+  background: #ffffff;
+  color: #0f172a;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -37,14 +44,23 @@ a {
 }
 
 button,
-input {
+input,
+textarea,
+select {
   font: inherit;
 }
 
+img {
+  max-width: 100%;
+  display: block;
+}
+
 .container-custom {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding-left: 24px;
+  padding-right: 24px;
 }
 
 .top-theme-bg {
@@ -55,26 +71,118 @@ input {
   background: #050816;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-/* Hide scrollbar for IE, Edge and Firefox */
+
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-/* Custom Infinite Marquee */
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(calc(-50% - 12px)); } 
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
 }
 
-.animate-marquee {
-  animation: marquee 100s linear infinite;
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes logoMarquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes logoMarqueeReverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-logo-marquee {
+  animation: logoMarquee 28s linear infinite;
+}
+
+.animate-logo-marquee-reverse {
+  animation: logoMarqueeReverse 28s linear infinite;
+}
+
+.logo-mask-fade {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+:root.mc-dark {
+  --mc-bg-main: #000000;
+  --mc-bg-soft: #08111d;
+  --mc-bg-card: rgba(255, 255, 255, 0.05);
+  --mc-border: rgba(255, 255, 255, 0.10);
+  --mc-text-main: #ffffff;
+  --mc-text-soft: rgba(255, 255, 255, 0.68);
+  --mc-input-bg: rgba(255, 255, 255, 0.06);
+  --mc-nav-bg: #08111d;
+}
+
+:root.mc-light {
+  --mc-bg-main: #f4f8fb;
+  --mc-bg-soft: #ffffff;
+  --mc-bg-card: rgba(255, 255, 255, 0.96);
+  --mc-border: rgba(15, 23, 42, 0.10);
+  --mc-text-main: #0f172a;
+  --mc-text-soft: rgba(15, 23, 42, 0.68);
+  --mc-input-bg: #ffffff;
+  --mc-nav-bg: #ffffff;
+}
+
+@media (min-width: 768px) {
+  :root.mc-dark,
+  :root.mc-light {
+    --mc-nav-bg: #ffffff;
+    --mc-bg-main: #ffffff;
+    --mc-bg-soft: #ffffff;
+    --mc-bg-card: #ffffff;
+    --mc-bg-card-strong: #ffffff;
+    --mc-border: rgba(15, 23, 42, 0.1);
+    --mc-text-main: #0f172a;
+    --mc-text-soft: rgba(15, 23, 42, 0.72);
+    --mc-text-faint: rgba(15, 23, 42, 0.52);
+    --mc-input-bg: #ffffff;
+  }
+}
+
+
+
+html,
+body,
+#root {
+  min-height: 100%;
 }

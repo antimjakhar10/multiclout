@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FiUsers, FiVideo, FiUserCheck, FiTarget } from "react-icons/fi";
 import axios from "axios";
+import { API } from "../utils/api";
 
 const getStatIcon = (label) => {
   const l = label.toLowerCase();
@@ -17,7 +18,7 @@ function StatsSection() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/stats`);
+        const res = await axios.get(`${API}/stats`);
         setStats(res.data.stats || []);
       } catch (error) {
         console.error("Error fetching stats", error);
@@ -27,7 +28,7 @@ function StatsSection() {
   }, []);
 
   return (
-    <section className="bg-black py-12 relative border-y border-white/5">
+    <section className="bg-[#f8fbfc] py-12 relative border-y border-white/5">
       <div className="container-custom relative z-10 flex justify-center px-4">
         
         <div className="bg-[#111111] border border-white/10 rounded-[35px] py-6 px-8 md:px-12 w-full max-w-4xl shadow-2xl">

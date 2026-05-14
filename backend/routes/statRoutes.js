@@ -9,12 +9,14 @@ const {
   deleteStat,
 } = require("../controllers/statController");
 
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { protectAdmin } = require("../middleware/authMiddleware");
 
 router.get("/", getStats);
-router.get("/admin/all", protect, adminOnly, getAllStatsAdmin);
-router.post("/add", protect, adminOnly, addStat);
-router.put("/:id", protect, adminOnly, updateStat);
-router.delete("/:id", protect, adminOnly, deleteStat);
+
+// ADMIN
+router.get("/admin/all", protectAdmin, getAllStatsAdmin);
+router.post("/add", protectAdmin, addStat);
+router.put("/:id", protectAdmin, updateStat);
+router.delete("/:id", protectAdmin, deleteStat);
 
 module.exports = router;

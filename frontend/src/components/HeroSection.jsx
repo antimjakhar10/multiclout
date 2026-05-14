@@ -1,155 +1,201 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { FiPhone, FiChevronDown, FiShield, FiPlayCircle, FiStar } from "react-icons/fi";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { FaPlay, FaArrowRight } from "react-icons/fa";
+import { FiUsers, FiVideo, FiUserCheck, FiTarget } from "react-icons/fi";
+import axios from "axios";
+import { API } from "../utils/api";
+import { getImageUrl } from "../utils/videoHelpers";
+import OtpRegistrationForm from "./auth/OtpRegistrationForm";
 
-function HeroSection() {
-  const [phone, setPhone] = useState("");
+const getStatIcon = (label) => {
+  const l = label.toLowerCase();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (phone.trim().length !== 10) {
-      alert("Please enter a valid 10-digit mobile number");
-      return;
+  if (l.includes("learn") || l.includes("student") || l.includes("user")) {
+    return <FiUsers size={18} />;
+  }
+
+  if (
+    l.includes("video") ||
+    l.includes("course") ||
+    l.includes("lesson") ||
+    l.includes("tutorial")
+  ) {
+    return <FiVideo size={18} />;
+  }
+
+  if (l.includes("mentor") || l.includes("guru") || l.includes("teacher")) {
+    return <FiUserCheck size={18} />;
+  }
+
+  return <FiTarget size={18} />;
+};
+
+function HeroSection({ mobileWatchScrollTarget = "" }) {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState([]);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [heroSettings, setHeroSettings] = useState(null);
+
+  useEffect(() => {
+    fetchStats();
+    fetchHeroSettings();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      setLoadingStats(true);
+      const res = await axios.get(`${API}/stats`);
+      setStats(res.data.stats || []);
+    } catch (error) {
+      console.error("Error fetching hero stats:", error);
+      setStats([]);
+    } finally {
+      setLoadingStats(false);
     }
-    alert("OTP sent to " + phone);
   };
 
+  const fetchHeroSettings = async () => {
+    try {
+      const res = await axios.get(`${API}/site-settings`);
+      if (res.data.success) {
+        setHeroSettings(res.data.settings?.heroSection || null);
+      }
+    } catch (error) {
+      console.error("Error fetching hero settings:", error);
+      setHeroSettings(null);
+    }
+  };
+
+  const safeStats = useMemo(() => {
+    if (stats?.length > 0) return stats.slice(0, 3);
+
+    return [
+      { value: "40 Lakh+", label: "Learners" },
+      { value: "10,000+", label: "Videos" },
+      { value: "250+", label: "Mentors" },
+    ];
+  }, [stats]);
+
+  const videoSrc = heroSettings?.heroVideo
+  ? getImageUrl(heroSettings.heroVideo, "/videos/hero.mp4")
+  : "/videos/hero.mp4";
+
   return (
-    <section className="relative w-full overflow-hidden top-theme-bg min-h-[85vh] flex items-center justify-center pt-28 lg:pt-16 pb-16">
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-0 -left-1/4 w-1/2 h-1/2 bg-white/10 blur-[120px] rounded-full mix-blend-overlay"></div>
-        <div className="absolute bottom-0 -right-1/4 w-1/2 h-1/2 bg-black/20 blur-[120px] rounded-full mix-blend-overlay"></div>
-        <div className="absolute inset-0 bg-[url('https://transparenttextures.com/patterns/cubes.png')] mix-blend-overlay opacity-30"></div>
-      </div>
+    <section className="relative overflow-hidden bg-black text-white">
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      >
+        <source src={videoSrc} type="video/mp4" />
+      </video>
 
-      <div className="px-6 md:px-12 lg:px-20 relative z-10 w-full max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-          
-          {/* Left Content Area */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="flex flex-col text-white w-full max-w-[40rem] mx-auto lg:mx-0 text-center lg:text-left"
-          >
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 w-fit mx-auto lg:mx-0 mb-6 shadow-xl"
-            >
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-              <span className="text-sm font-medium tracking-wide">Join 10+ Crore Learners</span>
-            </motion.div>
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_26%),linear-gradient(180deg,rgba(0,0,0,0.42)_0%,rgba(0,0,0,0.58)_45%,rgba(7,17,31,0.88)_100%)]" />
 
-            <h1 className="text-4xl md:text-[3.25rem] lg:text-[4rem] font-extrabold leading-[1.15] mb-6 drop-shadow-lg tracking-tight">
-              Crack your goal with <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-400">India's top educators</span>
+      <div className="absolute left-[12%] top-[16%] h-[140px] w-[140px] rounded-full bg-cyan-400/12 blur-3xl sm:h-[180px] sm:w-[180px] lg:h-[280px] lg:w-[280px]" />
+      <div className="absolute bottom-[12%] right-[14%] h-[130px] w-[130px] rounded-full bg-emerald-400/12 blur-3xl sm:h-[180px] sm:w-[180px] lg:h-[260px] lg:w-[260px]" />
+
+      <div className="relative z-10 px-4 pb-10 pt-12 sm:px-5 sm:pb-12 sm:pt-16 md:px-6 lg:px-8 lg:pb-14 lg:pt-20">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(380px,0.95fr)] lg:gap-12">
+          <div className="text-center lg:text-left">
+            <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[9px] font-medium uppercase tracking-[0.14em] text-cyan-300 backdrop-blur-md sm:px-4 sm:py-2 sm:text-[11px]">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-emerald-400" />
+              <span className="truncate">
+                {heroSettings?.badge || "Learn • Build • Grow With Multiclout"}
+              </span>
+            </div>
+
+            <h1 className="mt-4 text-[30px] font-bold leading-[1.08] sm:text-[38px] md:text-[46px] lg:max-w-[650px] lg:text-[58px] lg:leading-[1.02]">
+              {heroSettings?.titleLine1 || "Build Your Future With"}
+              <span className="mt-1.5 block bg-gradient-to-r from-cyan-300 via-sky-200 to-emerald-300 bg-clip-text text-transparent">
+                {heroSettings?.titleHighlight || "Smart Business Learning"}
+              </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-white/90 mb-10 max-w-xl mx-auto lg:mx-0 font-medium">
-              Over <span className="font-bold text-yellow-300">10 crore</span> learners trust us for their preparation. Start learning today with premium resources.
-            </p>
+            <p className="hidden md:block mx-auto mt-3 max-w-2xl text-[14px] leading-6 text-slate-200 sm:text-[15px] sm:leading-7 md:text-[16px] md:leading-7 lg:mx-0 lg:max-w-[620px]">
+  {heroSettings?.description ||
+    "Explore powerful business ideas, practical tutorials, and the right direction to grow with more clarity, confidence, and real support."}
+</p>
 
-            {/* Input Form Module */}
-            <motion.form 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              onSubmit={handleSubmit}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 p-2 md:p-3 rounded-2xl w-full max-w-xl mx-auto lg:mx-0 shadow-2xl relative overflow-hidden group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
-              <div className="flex flex-col md:flex-row gap-3">
-                <div className="flex bg-white rounded-xl overflow-hidden h-14 md:h-16 flex-1 shadow-inner items-center px-4">
-                  <div className="flex items-center gap-2 text-slate-700 font-semibold border-r border-slate-200 pr-3 cursor-pointer hover:bg-slate-50 transition-colors py-2 rounded-lg">
-                    <span className="text-xl">🇮🇳</span>
-                    <span>+91</span>
-                    <FiChevronDown className="text-slate-400" />
-                  </div>
-                  <input
-                    type="tel"
-                    placeholder="Enter mobile number"
-                    className="w-full h-full bg-transparent outline-none px-4 text-slate-800 font-semibold placeholder:text-slate-400"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, ""))}
-                    maxLength="10"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-slate-900 hover:bg-black text-white font-semibold rounded-xl h-14 md:h-16 px-8 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg flex-shrink-0 flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  Join for free
-                </button>
-              </div>
-              <div className="w-full mt-3 flex items-center justify-center md:justify-start gap-2 pl-2 md:pl-4 opacity-80 text-sm">
-                <FiShield /> <span>We'll send an OTP for verification</span>
-              </div>
-            </motion.form>
-          </motion.div>
-
-          {/* Right Illustrations Area */}
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative lg:h-[650px] flex items-center justify-center mt-12 lg:mt-0"
-          >
-            {/* Main Interactive Floating Display */}
-            <div className="relative w-full max-w-lg lg:max-w-xl mx-auto aspect-square">
-              {/* Central Glowing Orb */}
-              <div className="absolute inset-0 bg-white/20 blur-[80px] rounded-full animate-pulse shadow-[0_0_120px_rgba(255,255,255,0.4)]"></div>
-              
-              {/* Main Image Banner */}
-              <motion.div 
-                animate={{ y: [0, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                className="absolute z-20 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[85%] rounded-[2rem] overflow-hidden border-4 border-white/20 shadow-2xl backdrop-blur-md"
+            <div className="mt-5 flex flex-col items-center gap-2.5 sm:flex-row sm:justify-center lg:justify-start">
+              <Link
+                to={heroSettings?.primaryButtonLink || "/business-plan"}
+                className="inline-flex h-[44px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 text-[13px] font-semibold text-white shadow-[0_12px_35px_rgba(16,185,129,0.22)] transition duration-300 hover:scale-[1.02] sm:h-[48px] sm:px-6 sm:text-sm"
               >
-                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop" alt="Students leaning online" className="w-full h-auto object-cover opacity-90 hover:scale-105 transition-transform duration-700" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <p className="font-bold text-lg flex items-center gap-2"><FiPlayCircle className="text-green-400" /> Live Interactive Classes</p>
-                </div>
-              </motion.div>
+                {heroSettings?.primaryButtonText || "Register Now & Start Earning Today"}
+                <FaArrowRight className="text-[10px]" />
+              </Link>
 
-              {/* Floating Element 1 - Reviews */}
-              <motion.div 
-                animate={{ y: [0, -15, 0], rotate: [0, 2, 0] }}
-                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut", delay: 1 }}
-                className="absolute top-[10%] right-[-5%] z-30 bg-white text-slate-800 rounded-2xl p-4 shadow-2xl flex items-center gap-4"
-              >
-                <div className="w-12 h-12 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-xl">
-                  <FiStar className="fill-current" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Top Rated</p>
-                  <p className="font-extrabold text-xl">4.9/5.0</p>
-                </div>
-              </motion.div>
-
-              {/* Floating Element 2 - Tutors */}
-              <motion.div 
-                animate={{ y: [0, 20, 0], rotate: [0, -2, 0] }}
-                transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.5 }}
-                className="absolute bottom-[10%] left-[-5%] z-30 bg-[#0f172a]/90 backdrop-blur-lg border border-white/10 text-white rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-4"
-              >
-                <div className="flex -space-x-3">
-                  <img className="w-10 h-10 rounded-full border-2 border-[#0f172a]" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150&auto=format&fit=crop" alt="Tutor" />
-                  <img className="w-10 h-10 rounded-full border-2 border-[#0f172a]" src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=150&auto=format&fit=crop" alt="Tutor" />
-                  <div className="w-10 h-10 rounded-full border-2 border-[#0f172a] bg-slate-700 flex items-center justify-center text-xs font-bold">+50</div>
-                </div>
-                <div>
-                  <p className="font-bold text-sm">Expert Mentors</p>
-                  <p className="text-xs text-slate-300">Available 24/7</p>
-                </div>
-              </motion.div>
+              <Link
+  to={heroSettings?.secondaryButtonLink || "/watch-videos"}
+  onClick={(e) => {
+    if (mobileWatchScrollTarget && window.innerWidth < 768) {
+      e.preventDefault();
+      const section = document.getElementById(mobileWatchScrollTarget);
+      if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  }}
+  className="inline-flex h-[44px] items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 text-[13px] font-semibold text-white backdrop-blur-md transition duration-300 hover:bg-white/15 sm:h-[48px] sm:px-6 sm:text-sm"
+>
+                <FaPlay className="text-[10px]" />
+                {heroSettings?.secondaryButtonText || "Watch Videos"}
+              </Link>
             </div>
-          </motion.div>
+          </div>
 
+          <div className="relative">
+  <div className="pointer-events-none absolute inset-0 rounded-[32px] bg-gradient-to-br from-cyan-500/10 via-white/5 to-emerald-500/10 blur-2xl" />
+
+  <div className="relative z-10">
+    <OtpRegistrationForm
+      mode="hero"
+      compact={true}
+      onHeroVerified={(phone) => {
+        sessionStorage.setItem("verifiedRegisterPhone", phone);
+        navigate("/register");
+      }}
+    />
+  </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              {loadingStats
+                ? [1, 2, 3].map((item) => (
+                    <div
+                      key={item}
+                      className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-4 backdrop-blur-md"
+                    >
+                      <div className="mx-auto mb-2 h-9 w-9 animate-pulse rounded-full bg-white/10" />
+                      <div className="mx-auto h-5 w-14 animate-pulse rounded bg-white/10" />
+                      <div className="mx-auto mt-2 h-3 w-16 animate-pulse rounded bg-white/10" />
+                    </div>
+                  ))
+                : safeStats.map((stat, index) => (
+                    <div
+                      key={stat._id || index}
+                      className="rounded-[20px] border border-white/10 bg-white/8 px-3 py-4 text-center backdrop-blur-md transition duration-300 hover:bg-white/12"
+                    >
+                      <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-300">
+                        {getStatIcon(stat.label)}
+                      </div>
+                      <h3 className="text-[16px] font-bold text-white sm:text-[18px] md:text-[22px]">
+                        {stat.value}
+                      </h3>
+                      <p className="mt-1 text-[11px] leading-4 text-slate-300 capitalize sm:text-xs md:text-sm">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      <div className="absolute bottom-0 left-0 h-20 w-full bg-gradient-to-t from-[#07111f] to-transparent sm:h-24" />
     </section>
   );
 }
