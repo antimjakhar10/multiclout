@@ -224,10 +224,37 @@ const updateFranchiseEnquiryStatus = async (req, res) => {
   }
 };
 
+const deleteFranchiseEnquiry = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deleted = await FranchiseEnquiry.findByIdAndDelete(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        success: false,
+        message: "Enquiry not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Enquiry deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete enquiry",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getFranchiseData,
   saveFranchiseData,
   createFranchiseEnquiry,
   getFranchiseEnquiries,
   updateFranchiseEnquiryStatus,
+  deleteFranchiseEnquiry,
 };

@@ -64,7 +64,11 @@ exports.createOrder = async (req, res) => {
 
 exports.getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id })
+    const orders = await Order.find({
+      user: req.user._id,
+      paymentMethod: "razorpay",
+      paymentStatus: "success",
+    })
       .populate("items.course")
       .sort({ createdAt: -1 });
 
@@ -76,6 +80,32 @@ exports.getMyOrders = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch orders",
+      error: error.message,
+    });
+  }
+};
+
+exports.checkCoursePurchase = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const order = await Order.findOne({
+      user: req.user._id,
+      paymentMethod: "razorpay",
+      paymentStatus: "success",
+      orderStatus: "placed",
+      "items.course": courseId,
+    });
+
+    return res.status(200).json({
+      success: true,
+      purchased: !!order,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      purchased: false,
+      message: "Failed to check course purchase",
       error: error.message,
     });
   }

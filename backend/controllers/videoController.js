@@ -227,6 +227,38 @@ const getAdminVideos = async (req, res) => {
   }
 };
 
+const getVideoCategories = async (req, res) => {
+  try {
+    const categories = await Video.distinct("category", {
+      category: { $exists: true, $ne: "" },
+    });
+
+    const cleanCategories = categories
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+      .filter(
+        (item, index, arr) =>
+          arr.findIndex((x) => x.toLowerCase() === item.toLowerCase()) === index
+      )
+      .sort((a, b) => a.localeCompare(b));
+
+    if (!cleanCategories.some((item) => item.toLowerCase() === "other")) {
+      cleanCategories.push("Other");
+    }
+
+    res.json({
+      success: true,
+      categories: cleanCategories,
+    });
+  } catch (error) {
+    console.error("getVideoCategories error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch video categories",
+    });
+  }
+};
+
 const createVideo = async (req, res) => {
   try {
     const {
@@ -690,6 +722,7 @@ module.exports = {
   getWatchPageData,
   getVideoBySlug,
   getVideosByCategory,
+  getVideoCategories,
   getAdminVideos,
   createVideo,
   updateVideo,

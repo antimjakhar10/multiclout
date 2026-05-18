@@ -75,8 +75,50 @@ const userSchema = new mongoose.Schema(
       enum: ["pending", "success", "failed", "skipped"],
       default: "pending",
     },
+    razorpaySubscriptionId: {
+      type: String,
+      default: "",
+    },
+    razorpayPlanId: {
+      type: String,
+      default: "",
+    },
+    subscriptionBillingCycle: {
+      type: String,
+      enum: ["none", "monthly", "yearly"],
+      default: "none",
+    },
+    subscriptionAutoPay: {
+      type: Boolean,
+      default: false,
+    },
+    subscriptionCancelledAt: {
+      type: Date,
+      default: null,
+    },
+    businessMembershipStatus: {
+      type: String,
+      enum: ["inactive", "active"],
+      default: "inactive",
+    },
+    businessMembershipPlan: {
+      type: String,
+      default: "none",
+    },
+    businessMembershipAmount: {
+      type: Number,
+      default: 0,
+    },
+    businessMembershipStartDate: {
+      type: Date,
+      default: null,
+    },
+    businessMembershipEndDate: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("User", userSchema);

@@ -32,23 +32,28 @@ exports.updatePlanSettings = async (req, res) => {
     const settings = await getOrCreateSettings();
 
     if (req.body.mobileSection) {
-      settings.mobileSection = req.body.mobileSection;
+      settings.set("mobileSection", req.body.mobileSection);
+      settings.markModified("mobileSection");
     }
 
     if (req.body.businessSection) {
-      settings.businessSection = req.body.businessSection;
+      settings.set("businessSection", req.body.businessSection);
+      settings.markModified("businessSection");
     }
 
     if (req.body.memberSection) {
-  settings.memberSection = req.body.memberSection;
-}
+      settings.set("memberSection", req.body.memberSection);
+      settings.markModified("memberSection");
+    }
 
     await settings.save();
+
+    const updatedSettings = await PlanSettings.findById(settings._id).lean();
 
     return res.status(200).json({
       success: true,
       message: "Plan settings updated successfully",
-      settings,
+      settings: updatedSettings,
     });
   } catch (error) {
     return res.status(500).json({

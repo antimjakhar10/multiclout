@@ -1,6 +1,8 @@
+const dotenv = require("dotenv");
+dotenv.config();
+
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
@@ -24,9 +26,7 @@ const otpRoutes = require("./routes/otpRoutes");
 const userRoutes = require("./routes/userRoutes");
 const planSettingsRoutes = require("./routes/planSettingsRoutes");
 const orderRoutes = require("./routes/orderRoutes");
-// const paymentRoutes = require("./routes/paymentRoutes");
-
-dotenv.config();
+const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
 
@@ -107,7 +107,7 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/plan-settings", planSettingsRoutes);
 app.use("/api/orders", orderRoutes);
-// app.use("/api/payments", paymentRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/", (req, res) => {
   res.send("Multiclout Backend Running...");

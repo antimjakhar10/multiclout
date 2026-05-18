@@ -4,7 +4,7 @@ const featureSchema = new mongoose.Schema(
   {
     text: { type: String, default: "" },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const planSchema = new mongoose.Schema(
@@ -13,6 +13,31 @@ const planSchema = new mongoose.Schema(
     title: { type: String, default: "" },
     price: { type: String, default: "" },
     oldPrice: { type: String, default: "" },
+
+    trialPrice: { type: String, default: "" },
+    recurringPrice: { type: String, default: "" },
+
+    billingCycle: {
+      type: String,
+      enum: ["none", "monthly", "yearly"],
+      default: "none",
+    },
+
+    trialDays: {
+      type: Number,
+      default: 0,
+    },
+
+    autopayEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    razorpayPlanId: {
+      type: String,
+      default: "",
+    },
+
     badge: { type: String, default: "" },
     subtitle: { type: String, default: "" },
     description: { type: String, default: "" },
@@ -22,7 +47,7 @@ const planSchema = new mongoose.Schema(
     popular: { type: Boolean, default: false },
     features: { type: [featureSchema], default: [] },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const planSettingsSchema = new mongoose.Schema(
@@ -56,21 +81,21 @@ const planSettingsSchema = new mongoose.Schema(
     },
 
     memberSection: {
-  badge: { type: String, default: "Membership Plans" },
-  heading: {
-    type: String,
-    default: "Become a Member",
+      badge: { type: String, default: "Membership Plans" },
+      heading: {
+        type: String,
+        default: "Become a Member",
+      },
+      subtitle: {
+        type: String,
+        default:
+          "Choose a membership plan to unlock earning access and member benefits.",
+      },
+      ctaText: { type: String, default: "Join Now" },
+      plans: { type: [planSchema], default: [] },
+    },
   },
-  subtitle: {
-    type: String,
-    default:
-      "Choose a membership plan to unlock earning access and member benefits.",
-  },
-  ctaText: { type: String, default: "Join Now" },
-  plans: { type: [planSchema], default: [] },
-},
-  },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("PlanSettings", planSettingsSchema);

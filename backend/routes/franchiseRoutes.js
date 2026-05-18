@@ -7,6 +7,7 @@ const {
   createFranchiseEnquiry,
   getFranchiseEnquiries,
   updateFranchiseEnquiryStatus,
+  deleteFranchiseEnquiry,
 } = require("../controllers/franchiseController");
 
 const protectAdmin = require("../middleware/adminAuthMiddleware");
@@ -19,5 +20,6 @@ router.post("/enquiry", createFranchiseEnquiry);
 router.post("/save", protectAdmin, saveFranchiseData);
 router.get("/enquiries", protectAdmin, getFranchiseEnquiries);
 router.put("/enquiries/:id", protectAdmin, updateFranchiseEnquiryStatus);
+router.delete("/enquiries/:id", protectAdmin, deleteFranchiseEnquiry);
 
 module.exports = router;

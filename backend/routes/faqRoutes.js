@@ -10,13 +10,13 @@ const {
   deleteFAQ,
 } = require("../controllers/faqController");
 
-const { protect, adminOnly } = require("../middleware/authMiddleware");
+const { protectAdmin } = require("../middleware/authMiddleware");
 
 router.get("/", getFAQs);
-router.get("/admin/all", protect, adminOnly, getAllFAQsAdmin);
-router.post("/add", protect, adminOnly, addFAQ);
-router.put("/:id", protect, adminOnly, updateFAQ);
-router.delete("/:id", protect, adminOnly, deleteFAQ);
+router.get("/admin/all", protectAdmin, getAllFAQsAdmin);
+router.post("/add", protectAdmin, addFAQ);
+router.put("/:id", protectAdmin, updateFAQ);
+router.delete("/:id", protectAdmin, deleteFAQ);
 router.get("/:id", getSingleFAQ);
 
 module.exports = router;

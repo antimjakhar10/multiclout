@@ -7,6 +7,7 @@ const {
   getWatchPageData,
   getVideoBySlug,
   getVideosByCategory,
+  getVideoCategories,
   getAdminVideos,
   createVideo,
   updateVideo,
@@ -41,6 +42,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.get("/watch-page", optionalProtect, getWatchPageData);
+router.get("/categories/list", getVideoCategories);
 router.get("/category/:slug", optionalProtect, getVideosByCategory);
 router.get("/admin/all", protectAdmin, getAdminVideos);
 
