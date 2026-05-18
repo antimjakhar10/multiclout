@@ -32,11 +32,14 @@ function CourseDetail() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [openSections, setOpenSections] = useState({ 0: true });
+  const [hasPurchased, setHasPurchased] = useState(false);
 
-  const mobilePageBg = "bg-[var(--mc-bg-main)] text-[var(--mc-text-main)] md:bg-white md:text-slate-900";
-const mobileCardBg = "bg-[var(--mc-bg-card)] text-[var(--mc-text-main)] border-[var(--mc-border)] md:bg-white md:text-slate-900 md:border-slate-200";
-const mobileSoftText = "text-[var(--mc-text-soft)] md:text-slate-700";
-const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
+  const mobilePageBg =
+    "bg-[var(--mc-bg-main)] text-[var(--mc-text-main)] md:bg-white md:text-slate-900";
+  const mobileCardBg =
+    "bg-[var(--mc-bg-card)] text-[var(--mc-text-main)] border-[var(--mc-border)] md:bg-white md:text-slate-900 md:border-slate-200";
+  const mobileSoftText = "text-[var(--mc-text-soft)] md:text-slate-700";
+  const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
 
   useEffect(() => {
     const fetchCourse = async () => {
@@ -67,21 +70,50 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [slug, id]);
 
+  useEffect(() => {
+  const checkPurchase = async () => {
+    try {
+      if (!course?._id) return;
+
+      const token =
+        localStorage.getItem("userToken") || localStorage.getItem("token");
+
+      if (!token) {
+        setHasPurchased(false);
+        return;
+      }
+
+      const res = await fetch(`${API}/orders/check-course/${course._id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+
+      setHasPurchased(!!data.purchased);
+    } catch (error) {
+      console.error("Course purchase check error:", error);
+      setHasPurchased(false);
+    }
+  };
+
+  checkPurchase();
+}, [course?._id]);
+
   const imageUrl = useMemo(() => {
-  if (!course?.image) return "";
+    if (!course?.image) return "";
 
-  const image = String(course.image).trim();
+    const image = String(course.image).trim();
 
-  if (/^https?:\/\//i.test(image)) {
-    return image;
-  }
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
 
-  const cleanPath = image
-    .replace(/\\/g, "/")
-    .replace(/^\/+/, "");
+    const cleanPath = image.replace(/\\/g, "/").replace(/^\/+/, "");
 
-  return `${API_HOST}/${cleanPath}`;
-}, [course]);
+    return `${API_HOST}/${cleanPath}`;
+  }, [course]);
 
   const totalLectures = useMemo(() => {
     if (!course?.sections?.length) return 0;
@@ -89,7 +121,7 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
     return course.sections.reduce((acc, section) => {
       const metaCount = parseInt(
         String(section.lecturesCount || "").replace(/\D/g, ""),
-        10
+        10,
       );
 
       if (!Number.isNaN(metaCount) && metaCount > 0) return acc + metaCount;
@@ -153,10 +185,19 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
   };
 
   const openLessonVideo = (lesson) => {
-    if (lesson?.type === "video" && lesson?.videoUrl) {
-      window.open(lesson.videoUrl, "_blank", "noopener,noreferrer");
-    }
-  };
+  if (!lesson?.videoUrl) return;
+
+  if (!hasPurchased) {
+    alert("Please buy this course first to access lessons.");
+    addToCart(course);
+    navigate("/cart");
+    return;
+  }
+
+  if (lesson?.type === "video") {
+    window.open(lesson.videoUrl, "_blank", "noopener,noreferrer");
+  }
+};
 
   const handleAddToCart = () => {
     addToCart(course);
@@ -241,19 +282,19 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
 
   return (
     <>
-    <SEO
-  title={course?.seoTitle || course?.title || "Course"}
-  description={
-    course?.seoDescription ||
-    course?.subtitle ||
-    course?.description ||
-    "Explore this course on Multiclout"
-  }
-  keywords={
-    course?.seoKeywords ||
-    `${course?.title || ""}, ${course?.category || ""}, Multiclout course`
-  }
-/>
+      <SEO
+        title={course?.seoTitle || course?.title || "Course"}
+        description={
+          course?.seoDescription ||
+          course?.subtitle ||
+          course?.description ||
+          "Explore this course on Multiclout"
+        }
+        keywords={
+          course?.seoKeywords ||
+          `${course?.title || ""}, ${course?.category || ""}, Multiclout course`
+        }
+      />
       <div className="hidden md:block">
         <Navbar />
       </div>
@@ -355,10 +396,10 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
             <div className="space-y-7 md:space-y-10">
               {/* MOBILE CARD */}
               <div className="lg:hidden">
-                <div className={`overflow-hidden rounded-[22px] border shadow-[0_12px_30px_rgba(2,12,27,0.10)] md:rounded-[26px] md:shadow-[0_18px_40px_rgba(2,12,27,0.10)] ${mobileCardBg}`}>
-                  <div
-                    className="relative h-[200px] overflow-hidden sm:h-[260px] md:h-[220px] md:sm:h-[280px]"
-                  >
+                <div
+                  className={`overflow-hidden rounded-[22px] border shadow-[0_12px_30px_rgba(2,12,27,0.10)] md:rounded-[26px] md:shadow-[0_18px_40px_rgba(2,12,27,0.10)] ${mobileCardBg}`}
+                >
+                  <div className="relative h-[200px] overflow-hidden sm:h-[260px] md:h-[220px] md:sm:h-[280px]">
                     <img
                       src={imageUrl}
                       alt={course.title}
@@ -436,8 +477,12 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
               </div>
 
               {course.whatYouWillLearn?.length ? (
-              <section className={`rounded-[22px] border p-5 md:rounded-[28px] md:bg-[#f8fbfc] md:p-8 ${mobileCardBg}`}>
-  <h2 className={`text-[24px] font-bold leading-tight md:text-3xl ${mobileHeading}`}>
+                <section
+                  className={`rounded-[22px] border p-5 md:rounded-[28px] md:bg-[#f8fbfc] md:p-8 ${mobileCardBg}`}
+                >
+                  <h2
+                    className={`text-[24px] font-bold leading-tight md:text-3xl ${mobileHeading}`}
+                  >
                     What you'll learn
                   </h2>
 
@@ -445,7 +490,7 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                     {course.whatYouWillLearn.map((item, idx) => (
                       <div
                         key={idx}
-                      className={`flex items-start gap-3 text-sm leading-6 md:text-[18px] md:leading-8 ${mobileSoftText}`}
+                        className={`flex items-start gap-3 text-sm leading-6 md:text-[18px] md:leading-8 ${mobileSoftText}`}
                       >
                         <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#dff7ef] text-[#13b7dc] md:mt-1 md:h-7 md:w-7">
                           <FiCheck />
@@ -466,7 +511,8 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                       </h2>
 
                       <p className="mt-2 text-sm leading-6 text-[var(--mc-text-soft)] md:text-lg md:text-slate-500">
-                        {course.sections.length} sections • {totalLectures} lectures
+                        {course.sections.length} sections • {totalLectures}{" "}
+                        lectures
                         {totalLength ? ` • ${totalLength} total length` : ""}
                       </p>
                     </div>
@@ -479,7 +525,9 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                     </button>
                   </div>
 
-                 <div className={`overflow-hidden rounded-[22px] border md:rounded-[24px] ${mobileCardBg}`}>
+                  <div
+                    className={`overflow-hidden rounded-[22px] border md:rounded-[24px] ${mobileCardBg}`}
+                  >
                     {course.sections.map((section, idx) => {
                       const isOpen = !!openSections[idx];
 
@@ -487,9 +535,7 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                         <div
                           key={idx}
                           className={`${
-                            idx !== course.sections.length - 1
-                              ? "border-b"
-                              : ""
+                            idx !== course.sections.length - 1 ? "border-b" : ""
                           } md:border-slate-200`}
                           style={{
                             borderColor: "var(--mc-border)",
@@ -497,7 +543,7 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                         >
                           <button
                             onClick={() => toggleSection(idx)}
-                           className="flex w-full items-center justify-between gap-3 bg-[var(--mc-bg-card)] px-4 py-4 text-left transition md:bg-slate-50 md:px-5 md:py-5 md:hover:bg-slate-100"
+                            className="flex w-full items-center justify-between gap-3 bg-[var(--mc-bg-card)] px-4 py-4 text-left transition md:bg-slate-50 md:px-5 md:py-5 md:hover:bg-slate-100"
                             style={{
                               background: "var(--mc-bg-card)",
                             }}
@@ -512,7 +558,9 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                               <span className="max-w-[95px] text-right text-xs leading-5 text-[var(--mc-text-soft)] md:max-w-none md:text-base md:text-slate-500">
                                 {section.lecturesCount ||
                                   `${section.lessons?.length || 0} lectures`}
-                                {section.duration ? ` • ${section.duration}` : ""}
+                                {section.duration
+                                  ? ` • ${section.duration}`
+                                  : ""}
                               </span>
 
                               <FiChevronDown
@@ -525,37 +573,39 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
 
                           {isOpen ? (
                             <div className="bg-[var(--mc-bg-card)] px-4 py-1 md:bg-white md:px-5 md:py-2">
-                              {(section.lessons || []).map((lesson, lessonIdx) => (
-                                <div
-                                  key={lessonIdx}
-                                  onClick={() => openLessonVideo(lesson)}
-                                  className={`flex items-center justify-between gap-3 border-b py-3.5 last:border-b-0 md:gap-4 md:border-slate-100 md:py-4 ${
-                                    lesson.type === "video" && lesson.videoUrl
-                                      ? "cursor-pointer md:hover:bg-slate-50"
-                                      : ""
-                                  }`}
-                                  style={{
-                                    borderColor: "var(--mc-border)",
-                                  }}
-                                >
-                                  <div className="flex items-center gap-3 text-sm leading-6 text-[var(--mc-text-main)] md:text-lg md:text-slate-700">
-                                    <span className="shrink-0 text-[#10b8db]">
-                                      {lesson.type === "resource" ||
-                                      lesson.type === "article" ? (
-                                        <FiFileText />
-                                      ) : (
-                                        <FiPlayCircle />
-                                      )}
+                              {(section.lessons || []).map(
+                                (lesson, lessonIdx) => (
+                                  <div
+                                    key={lessonIdx}
+                                    onClick={() => openLessonVideo(lesson)}
+                                    className={`flex items-center justify-between gap-3 border-b py-3.5 last:border-b-0 md:gap-4 md:border-slate-100 md:py-4 ${
+                                      lesson.type === "video" && lesson.videoUrl
+                                        ? "cursor-pointer md:hover:bg-slate-50"
+                                        : ""
+                                    }`}
+                                    style={{
+                                      borderColor: "var(--mc-border)",
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-3 text-sm leading-6 text-[var(--mc-text-main)] md:text-lg md:text-slate-700">
+                                      <span className="shrink-0 text-[#10b8db]">
+                                        {lesson.type === "resource" ||
+                                        lesson.type === "article" ? (
+                                          <FiFileText />
+                                        ) : (
+                                          <FiPlayCircle />
+                                        )}
+                                      </span>
+
+                                      <span>{lesson.title}</span>
+                                    </div>
+
+                                    <span className="shrink-0 text-xs text-[var(--mc-text-soft)] md:text-base md:text-slate-500">
+                                      {lesson.duration || ""}
                                     </span>
-
-                                    <span>{lesson.title}</span>
                                   </div>
-
-                                  <span className="shrink-0 text-xs text-[var(--mc-text-soft)] md:text-base md:text-slate-500">
-                                    {lesson.duration || ""}
-                                  </span>
-                                </div>
-                              ))}
+                                ),
+                              )}
                             </div>
                           ) : null}
                         </div>
@@ -567,7 +617,9 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
 
               {course.requirements?.length ? (
                 <section>
-                 <h2 className={`text-[26px] font-bold leading-tight md:text-3xl ${mobileHeading}`}>
+                  <h2
+                    className={`text-[26px] font-bold leading-tight md:text-3xl ${mobileHeading}`}
+                  >
                     Requirements
                   </h2>
 
@@ -575,7 +627,7 @@ const mobileHeading = "text-[var(--mc-text-main)] md:text-[#18345d]";
                     {course.requirements.map((item, idx) => (
                       <li
                         key={idx}
-                       className={`flex items-start gap-3 text-sm leading-7 md:text-[18px] md:leading-8 ${mobileSoftText}`}
+                        className={`flex items-start gap-3 text-sm leading-7 md:text-[18px] md:leading-8 ${mobileSoftText}`}
                       >
                         <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#10b8db] md:h-2.5 md:w-2.5" />
                         <span>{item}</span>

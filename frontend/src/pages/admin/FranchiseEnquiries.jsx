@@ -33,29 +33,33 @@ function FranchiseEnquiries() {
     }
   };
 
-  const updateStatus = async (id, status) => {
-    try {
-      const res = await fetch(`${API}/franchise/enquiries/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status }),
-      });
+const deleteEnquiry = async (id) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this enquiry?"
+  );
 
-      const result = await res.json();
+  if (!confirmDelete) return;
 
-      if (result.success) {
-        fetchEnquiries();
-      } else {
-        alert(result.message || "Failed to update status");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Failed to update enquiry status");
+  try {
+    const res = await fetch(`${API}/franchise/enquiries/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const result = await res.json();
+
+    if (result.success) {
+      fetchEnquiries();
+    } else {
+      alert(result.message || "Failed to delete enquiry");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    alert("Failed to delete enquiry");
+  }
+};
 
   const exportCSV = () => {
   if (!enquiries.length) {
@@ -191,15 +195,13 @@ function FranchiseEnquiries() {
                           </span>
                         </td>
                         <td className="px-4 py-4">
-                          <select
-                            value={item.status}
-                            onChange={(e) => updateStatus(item._id, e.target.value)}
-                            className="h-11 min-w-[140px] rounded-xl border border-slate-300 bg-white px-3 text-sm text-[#07111a] outline-none transition focus:border-[#167a7a] focus:ring-2 focus:ring-[#167a7a]/10"
-                          >
-                            <option value="new">New</option>
-                            <option value="contacted">Contacted</option>
-                            <option value="closed">Closed</option>
-                          </select>
+                          <button
+  type="button"
+  onClick={() => deleteEnquiry(item._id)}
+  className="h-10 rounded-xl bg-red-500 px-4 text-sm font-semibold text-white transition hover:bg-red-600"
+>
+  Delete
+</button>
                         </td>
                       </tr>
                     ))}

@@ -6,6 +6,16 @@ const emptyPlan = (prefix = "plan") => ({
   title: "",
   price: "",
   oldPrice: "",
+
+  trialPrice: "",
+  recurringPrice: "",
+
+  billingCycle: "none",
+  trialDays: 0,
+
+  autopayEnabled: false,
+  razorpayPlanId: "",
+
   badge: "",
   subtitle: "",
   description: "",
@@ -14,6 +24,29 @@ const emptyPlan = (prefix = "plan") => ({
   active: true,
   popular: false,
   features: [{ text: "" }],
+});
+
+const normalizePlan = (plan = {}, prefix = "plan") => ({
+  key: plan.key || `${prefix}_${Date.now()}`,
+  title: plan.title || "",
+  price: plan.price || "",
+  oldPrice: plan.oldPrice || "",
+
+  trialPrice: plan.trialPrice || "",
+  recurringPrice: plan.recurringPrice || "",
+  billingCycle: plan.billingCycle || "none",
+  trialDays: Number(plan.trialDays || 0),
+  autopayEnabled: !!plan.autopayEnabled,
+  razorpayPlanId: plan.razorpayPlanId || "",
+
+  badge: plan.badge || "",
+  subtitle: plan.subtitle || "",
+  description: plan.description || "",
+  buttonText: plan.buttonText || "",
+  buttonLink: plan.buttonLink || "",
+  active: plan.active !== false,
+  popular: !!plan.popular,
+  features: plan.features?.length ? plan.features : [{ text: "" }],
 });
 
 const defaultSettings = {
@@ -35,12 +68,13 @@ const defaultSettings = {
     plans: [],
   },
   memberSection: {
-  badge: "Membership Plans",
-  heading: "Become a Member",
-  subtitle: "Choose a membership plan to unlock earning access and member benefits.",
-  ctaText: "Join Now",
-  plans: [],
-},
+    badge: "Membership Plans",
+    heading: "Become a Member",
+    subtitle:
+      "Choose a membership plan to unlock earning access and member benefits.",
+    ctaText: "Join Now",
+    plans: [],
+  },
 };
 
 function PlansAdmin() {
@@ -52,26 +86,31 @@ function PlansAdmin() {
     fetchSettings();
   }, []);
 
-  const mergeSettings = (settings) => ({
-    ...defaultSettings,
-    ...settings,
-    mobileSection: {
-      ...defaultSettings.mobileSection,
-      ...(settings?.mobileSection || {}),
-      plans: settings?.mobileSection?.plans || [],
-    },
-    businessSection: {
-      ...defaultSettings.businessSection,
-      ...(settings?.businessSection || {}),
-      plans: settings?.businessSection?.plans || [],
-    },
-    memberSection: {
-  ...defaultSettings.memberSection,
-  ...(settings?.memberSection || {}),
-  plans: settings?.memberSection?.plans || [],
-},
-  });
-
+ const mergeSettings = (settings) => ({
+  ...defaultSettings,
+  ...settings,
+  mobileSection: {
+    ...defaultSettings.mobileSection,
+    ...(settings?.mobileSection || {}),
+    plans: (settings?.mobileSection?.plans || []).map((plan) =>
+      normalizePlan(plan, "mobile")
+    ),
+  },
+  businessSection: {
+    ...defaultSettings.businessSection,
+    ...(settings?.businessSection || {}),
+    plans: (settings?.businessSection?.plans || []).map((plan) =>
+      normalizePlan(plan, "business")
+    ),
+  },
+  memberSection: {
+    ...defaultSettings.memberSection,
+    ...(settings?.memberSection || {}),
+    plans: (settings?.memberSection?.plans || []).map((plan) =>
+      normalizePlan(plan, "member")
+    ),
+  },
+});
   const fetchSettings = async () => {
     try {
       setLoading(true);
@@ -113,22 +152,22 @@ function PlansAdmin() {
     });
   };
 
- const addPlan = (section) => {
-  const prefix =
-    section === "businessSection"
-      ? "business"
-      : section === "memberSection"
-      ? "member"
-      : "mobile";
+  const addPlan = (section) => {
+    const prefix =
+      section === "businessSection"
+        ? "business"
+        : section === "memberSection"
+          ? "member"
+          : "mobile";
 
-  setForm((prev) => ({
-    ...prev,
-    [section]: {
-      ...prev[section],
-      plans: [...(prev[section].plans || []), emptyPlan(prefix)],
-    },
-  }));
-};
+    setForm((prev) => ({
+      ...prev,
+      [section]: {
+        ...prev[section],
+        plans: [...(prev[section].plans || []), emptyPlan(prefix)],
+      },
+    }));
+  };
 
   const duplicatePlan = (section, index) => {
     setForm((prev) => {
@@ -226,7 +265,7 @@ function PlansAdmin() {
       plans[planIndex] = {
         ...plans[planIndex],
         features: (plans[planIndex].features || []).filter(
-          (_, i) => i !== featureIndex
+          (_, i) => i !== featureIndex,
         ),
       };
 
@@ -246,18 +285,20 @@ function PlansAdmin() {
       plans: (section.plans || [])
         .filter((plan) => plan.key && plan.title)
         .map((plan) => ({
-          ...plan,
-          features: (plan.features || []).filter((feature) =>
-            feature.text?.trim()
-          ),
-        })),
+  ...plan,
+  trialDays: Number(plan.trialDays || 0),
+  autopayEnabled: !!plan.autopayEnabled,
+  features: (plan.features || []).filter((feature) =>
+    feature.text?.trim(),
+  ),
+})),
     });
 
-   return {
-  mobileSection: cleanSection(form.mobileSection),
-  businessSection: cleanSection(form.businessSection),
-  memberSection: cleanSection(form.memberSection),
-};
+    return {
+      mobileSection: cleanSection(form.mobileSection),
+      businessSection: cleanSection(form.businessSection),
+      memberSection: cleanSection(form.memberSection),
+    };
   };
 
   const handleSubmit = async (e) => {
@@ -306,7 +347,8 @@ function PlansAdmin() {
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <h2 className="text-2xl font-bold text-slate-900">Plans Management</h2>
         <p className="mt-2 text-sm text-slate-600">
-           Manage both mobile subscription and business plans dynamically from here.
+          Manage both mobile subscription and business plans dynamically from
+          here.
         </p>
       </div>
 
@@ -376,36 +418,36 @@ function PlansAdmin() {
         </SectionCard>
 
         <SectionCard
-  title="Member Plans Section"
-  action={
-    <button
-      type="button"
-      onClick={() => addPlan("memberSection")}
-      className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
-    >
-      Add Member Plan
-    </button>
-  }
->
-  <SectionFields
-    section="memberSection"
-    data={form.memberSection}
-    handleSectionChange={handleSectionChange}
-    type="business"
-  />
+          title="Member Plans Section"
+          action={
+            <button
+              type="button"
+              onClick={() => addPlan("memberSection")}
+              className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+            >
+              Add Member Plan
+            </button>
+          }
+        >
+          <SectionFields
+            section="memberSection"
+            data={form.memberSection}
+            handleSectionChange={handleSectionChange}
+            type="business"
+          />
 
-  <PlanList
-    section="memberSection"
-    plans={form.memberSection.plans}
-    handlePlanChange={handlePlanChange}
-    handleFeatureChange={handleFeatureChange}
-    addFeature={addFeature}
-    removeFeature={removeFeature}
-    removePlan={removePlan}
-    duplicatePlan={duplicatePlan}
-    movePlan={movePlan}
-  />
-</SectionCard>
+          <PlanList
+            section="memberSection"
+            plans={form.memberSection.plans}
+            handlePlanChange={handlePlanChange}
+            handleFeatureChange={handleFeatureChange}
+            addFeature={addFeature}
+            removeFeature={removeFeature}
+            removePlan={removePlan}
+            duplicatePlan={duplicatePlan}
+            movePlan={movePlan}
+          />
+        </SectionCard>
 
         <div className="sticky bottom-4 z-20 flex justify-end">
           <button
@@ -517,12 +559,12 @@ function PlanList({
           <PlanEditor
             key={plan.key || index}
             title={`${
-  section === "businessSection"
-    ? "Business"
-    : section === "memberSection"
-    ? "Member"
-    : "Mobile"
-} Plan ${index + 1}`}
+              section === "businessSection"
+                ? "Business"
+                : section === "memberSection"
+                  ? "Member"
+                  : "Mobile"
+            } Plan ${index + 1}`}
             plan={plan}
             section={section}
             index={index}
@@ -633,6 +675,56 @@ function PlanEditor({
         />
 
         <Input
+          label="Trial Price"
+          value={plan.trialPrice}
+          onChange={(value) =>
+            handlePlanChange(section, index, "trialPrice", value)
+          }
+        />
+
+        <Input
+          label="Recurring Price"
+          value={plan.recurringPrice}
+          onChange={(value) =>
+            handlePlanChange(section, index, "recurringPrice", value)
+          }
+        />
+
+        <div>
+          <label className="mb-2 block text-sm font-medium text-slate-700">
+            Billing Cycle
+          </label>
+
+          <select
+            value={plan.billingCycle || "none"}
+            onChange={(e) =>
+              handlePlanChange(section, index, "billingCycle", e.target.value)
+            }
+            className="h-11 w-full rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-[#167a7a] focus:ring-2 focus:ring-[#167a7a]/10"
+          >
+            <option value="none">None</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+        </div>
+
+        <Input
+          label="Trial Days"
+          value={plan.trialDays}
+          onChange={(value) =>
+            handlePlanChange(section, index, "trialDays", value)
+          }
+        />
+
+        <Input
+          label="Razorpay Plan ID"
+          value={plan.razorpayPlanId}
+          onChange={(value) =>
+            handlePlanChange(section, index, "razorpayPlanId", value)
+          }
+        />
+
+        <Input
           label="Badge"
           value={plan.badge}
           onChange={(value) => handlePlanChange(section, index, "badge", value)}
@@ -681,6 +773,14 @@ function PlanEditor({
             handlePlanChange(section, index, "popular", checked)
           }
         />
+
+        <Checkbox
+          label="Enable AutoPay"
+          checked={!!plan.autopayEnabled}
+          onChange={(checked) =>
+            handlePlanChange(section, index, "autopayEnabled", checked)
+          }
+        />
       </div>
 
       <div className="mt-5">
@@ -711,7 +811,7 @@ function PlanEditor({
                       section,
                       index,
                       featureIndex,
-                      e.target.value
+                      e.target.value,
                     )
                   }
                   className="h-11 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm text-slate-900 outline-none focus:border-[#167a7a] focus:ring-2 focus:ring-[#167a7a]/10"

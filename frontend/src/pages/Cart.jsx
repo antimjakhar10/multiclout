@@ -86,9 +86,10 @@ function Cart() {
       const orderData = await orderRes.json();
 
       if (!orderRes.ok || !orderData.success) {
-        alert(orderData.message || "Failed to create payment order");
-        return;
-      }
+  console.error("Course order create failed:", orderData);
+  alert(orderData.error || orderData.message || "Failed to create payment order");
+  return;
+}
 
       const options = {
         key: orderData.key,

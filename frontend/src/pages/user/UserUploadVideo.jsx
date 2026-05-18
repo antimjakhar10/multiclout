@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Eye, Image, UploadCloud, Video } from "lucide-react";
+import { Eye, Image, UploadCloud, Video, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { API } from "../../utils/videoHelpers";
 
@@ -58,13 +58,15 @@ function UserUploadVideo() {
   const [fetching, setFetching] = useState(true);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const [categories, setCategories] = useState([]);
 
   const token =
     localStorage.getItem("userToken") || localStorage.getItem("token");
 
   useEffect(() => {
-    fetchMyVideos();
-  }, []);
+  fetchMyVideos();
+  fetchCategories();
+}, []);
 
   const fetchMyVideos = async () => {
     try {
@@ -85,6 +87,19 @@ function UserUploadVideo() {
       setFetching(false);
     }
   };
+
+  const fetchCategories = async () => {
+  try {
+    const res = await fetch(`${API}/videos/categories/list`);
+    const data = await res.json();
+
+    if (data.success) {
+      setCategories(data.categories || []);
+    }
+  } catch (error) {
+    console.error("Category fetch error:", error);
+  }
+};
 
   const thumbnailPreview = thumbnail ? URL.createObjectURL(thumbnail) : "";
   const videoPreview = videoFile ? URL.createObjectURL(videoFile) : "";
@@ -188,13 +203,20 @@ function UserUploadVideo() {
             placeholder="Video title"
             required
           />
-          <Input
-            name="category"
-            value={form.category}
-            onChange={handleChange}
-            placeholder="Category"
-            required
-          />
+          <select
+  name="category"
+  value={form.category}
+  onChange={handleChange}
+  required
+  className="h-[52px] w-full rounded-2xl border border-white/10 bg-white px-4 text-[15px] text-[#0f172a] outline-none focus:border-cyan-400"
+>
+  <option value="">Select category</option>
+  {categories.map((cat) => (
+    <option key={cat} value={cat}>
+      {cat}
+    </option>
+  ))}
+</select>
           <Input
             name="duration"
             value={form.duration}

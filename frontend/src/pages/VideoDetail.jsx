@@ -586,12 +586,12 @@ function VideoDetail() {
                             )}
 
                             <button
-                              type="button"
-                              onClick={() => navigate("/business-plan")}
-                              className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-5 text-sm font-semibold text-white"
-                            >
-                              View Plans
-                            </button>
+  type="button"
+  onClick={() => navigate("/mobile-subscription")}
+  className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-5 text-sm font-semibold text-white"
+>
+  View Plans
+</button>
                           </div>
                         </div>
                       </div>

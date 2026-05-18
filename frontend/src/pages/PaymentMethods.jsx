@@ -42,103 +42,168 @@ function PaymentMethods() {
     return selectedPlan?.price || "₹0";
   }, [isCourseCheckout, selectedPlan, totalAmount]);
 
-  const handleCourseOrder = async () => {
-    if (!token) {
-      alert("Please login first");
-      navigate("/login");
+ const handleCourseOrder = async () => {
+  if (!token) {
+    alert("Please login first");
+    navigate("/login");
+    return;
+  }
+
+  if (!cartItems.length) {
+    alert("Cart is empty");
+    navigate("/cart");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const scriptLoaded = await loadRazorpayScript();
+
+    if (!scriptLoaded) {
+      alert("Unable to load Razorpay");
       return;
     }
 
-    if (!cartItems.length) {
-      alert("Cart is empty");
-      navigate("/cart");
+    const orderRes = await fetch(`${API}/payments/course/create-order`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        items: cartItems,
+      }),
+    });
+
+    const orderData = await orderRes.json();
+
+    if (!orderRes.ok || !orderData.success) {
+      alert(orderData.message || "Failed to create course order");
       return;
     }
 
-    try {
-      setLoading(true);
+    const options = {
+      key: orderData.key,
+      amount: orderData.amount,
+      currency: orderData.currency,
+      name: "Multiclout",
+      description: "Course Purchase",
+      image: window.location.origin + logo,
+      order_id: orderData.orderId,
 
-      const res = await fetch(`${API}/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          items: cartItems,
-          paymentMethod: "demo-online",
-        }),
-      });
+      handler: async function (response) {
+        try {
+          const verifyRes = await fetch(
+            `${API}/payments/course/verify`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                items: cartItems,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            }
+          );
 
-      const data = await res.json();
+          const verifyData = await verifyRes.json();
 
-      if (res.ok && data.success) {
-        localStorage.removeItem("multiclout_cart");
-        alert("Order placed successfully");
-        navigate("/account");
-      } else {
-        alert(data.message || "Order failed");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong while placing order");
-    } finally {
-      setLoading(false);
-    }
-  };
+          if (verifyRes.ok && verifyData.success) {
+            localStorage.removeItem("multiclout_cart");
 
-  const handleSubscriptionPayment = async () => {
-    if (!selectedPlan?.key) {
-      alert("No plan selected");
-      navigate("/mobile-subscription");
+            alert("Course purchase successful");
+
+            navigate("/account/my-courses");
+          } else {
+            alert(
+              verifyData.message || "Course payment verification failed"
+            );
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Payment verification failed");
+        }
+      },
+
+      prefill: {
+        name: orderData.user?.name || "",
+        email: orderData.user?.email || "",
+        contact: orderData.user?.phone || "",
+      },
+
+      theme: {
+        color: "#06b6d4",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+
+    paymentObject.open();
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong while processing payment");
+  } finally {
+    setLoading(false);
+  }
+};
+
+ const handleSubscriptionPayment = async () => {
+  if (!selectedPlan?.key) {
+    alert("No plan selected");
+    navigate("/mobile-subscription");
+    return;
+  }
+
+  if (!token) {
+    alert("Please login first");
+    navigate("/login");
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const scriptLoaded = await loadRazorpayScript();
+    if (!scriptLoaded) {
+      alert("Unable to load payment gateway");
       return;
     }
 
-    if (!token) {
-      alert("Please login first");
-      navigate("/login");
+    const subRes = await fetch(`${API}/payments/video-subscription/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        planKey: selectedPlan.key,
+      }),
+    });
+
+    const subData = await subRes.json();
+
+    if (!subRes.ok || !subData.success) {
+      alert(subData.message || "Failed to create subscription");
       return;
     }
 
-    try {
-      setLoading(true);
+    const options = {
+      key: subData.key,
+      subscription_id: subData.subscriptionId,
+      name: "Multiclout",
+      description: subData.planTitle || "Video Subscription",
+      image: window.location.origin + logo,
 
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        alert("Unable to load payment gateway");
-        return;
-      }
-
-      const orderRes = await fetch(`${API}/payments/create-order`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          planKey: selectedPlan.key,
-        }),
-      });
-
-      const orderData = await orderRes.json();
-
-      if (!orderRes.ok || !orderData.success) {
-        alert(orderData.message || "Failed to create payment order");
-        return;
-      }
-
-      const options = {
-        key: orderData.key,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Multiclout",
-        description: orderData.planTitle || "Subscription Payment",
-        image: window.location.origin + logo,
-        order_id: orderData.orderId,
-
-        handler: async function (response) {
-          try {
-            const verifyRes = await fetch(`${API}/payments/verify`, {
+      handler: async function (response) {
+        try {
+          const verifyRes = await fetch(
+            `${API}/payments/video-subscription/verify`,
+            {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -146,67 +211,48 @@ function PaymentMethods() {
               },
               body: JSON.stringify({
                 planKey: selectedPlan.key,
-                razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_subscription_id: response.razorpay_subscription_id,
                 razorpay_signature: response.razorpay_signature,
               }),
-            });
-
-            const verifyData = await verifyRes.json();
-
-            if (verifyRes.ok && verifyData.success) {
-              localStorage.setItem("user", JSON.stringify(verifyData.user));
-              alert("Payment successful");
-              navigate("/account/subscription");
-            } else {
-              alert(verifyData.message || "Payment verification failed");
             }
-          } catch (error) {
-            console.error(error);
-            alert("Payment verification failed");
+          );
+
+          const verifyData = await verifyRes.json();
+
+          if (verifyRes.ok && verifyData.success) {
+            localStorage.setItem("user", JSON.stringify(verifyData.user));
+            alert("Subscription activated successfully");
+            navigate("/account/subscription");
+          } else {
+            alert(verifyData.message || "Subscription verification failed");
           }
-        },
+        } catch (error) {
+          console.error(error);
+          alert("Subscription verification failed");
+        }
+      },
 
-        prefill: {
-          name: orderData.user?.name || "",
-          email: orderData.user?.email || "",
-          contact: orderData.user?.phone || "",
-        },
+      prefill: {
+        name: subData.user?.name || "",
+        email: subData.user?.email || "",
+        contact: subData.user?.phone || "",
+      },
 
-        theme: {
-          color: "#06b6d4",
-        },
+      theme: {
+        color: "#06b6d4",
+      },
+    };
 
-        modal: {
-          ondismiss: async function () {
-            try {
-              await fetch(`${API}/payments/fail`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  planKey: selectedPlan.key,
-                  reason: "Payment popup closed",
-                }),
-              });
-            } catch (error) {
-              console.error("Fail status update error:", error);
-            }
-          },
-        },
-      };
-
-      const paymentObject = new window.Razorpay(options);
-      paymentObject.open();
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong while starting payment");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong while starting subscription");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handlePayNow = async () => {
     if (isCourseCheckout) {
