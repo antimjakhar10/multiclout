@@ -263,35 +263,29 @@ function ReelsSection() {
           </div>
         ) : (
           <div
-  className="overflow-x-auto overflow-y-hidden pb-3 no-scrollbar"
-  onWheel={(e) => {
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-      e.preventDefault();
-      window.scrollBy({
-        top: e.deltaY,
-        left: 0,
-        behavior: "auto",
-      });
-    }
-  }}
->
-  <div className="flex min-w-max gap-4 lg:gap-5">
+            className="overflow-x-auto overflow-y-hidden pb-3 no-scrollbar relative"
+            style={{
+              transform: "translateZ(0)",
+              WebkitTransform: "translateZ(0)",
+            }}
+          >
+            <div className="flex w-max gap-4 lg:gap-5 pr-4">
               {filteredVideos.map((video, idx) => (
                 <div
-  key={`${video._id || idx}-${idx}`}
-  className="group relative shrink-0 basis-[200px] max-w-[272px] sm:basis-[255px] md:basis-[265px] lg:basis-[272px] xl:basis-[272px]"
->
+                  key={`${video._id || idx}-${idx}`}
+                  className="group relative w-[200px] shrink-0 sm:w-[255px] md:w-[265px] lg:w-[272px]"
+                >
                   <button
                     type="button"
                     onClick={() => openVideoDetail(video)}
-                    className="relative block h-[360px] w-full overflow-hidden rounded-[28px] bg-[#0c1726] text-left shadow-[0_18px_40px_rgba(17,41,74,0.18)] transition-shadow duration-300 hover:shadow-[0_24px_55px_rgba(17,41,74,0.26)] sm:h-[430px]"
+                    className="relative block h-[360px] w-full overflow-hidden rounded-[28px] bg-[#0c1726] text-left shadow-[0_12px_30px_rgba(17,41,74,0.14)] transition-transform duration-300 hover:-translate-y-1 sm:h-[430px]"
                   >
                     <img
                       src={getImageUrl(video.thumbnail)}
                       alt={video.title}
                       loading="lazy"
                       draggable="false"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      className="h-full w-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-[1.015]"
                     />
 
                     <div className="absolute inset-0 bg-gradient-to-t from-[#08111d]/95 via-[#08111d]/20 to-transparent" />
@@ -355,18 +349,36 @@ function ReelsSection() {
           }
 
           .marquee-track {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            width: max-content;
-            padding-right: 16px;
-            will-change: transform;
-            animation: marqueeLeft 42s linear infinite;
-          }
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: max-content;
+  padding-right: 16px;
+
+  will-change: transform;
+  transform: translate3d(0,0,0);
+
+  backface-visibility: hidden;
+  perspective: 1000px;
+
+  animation: marqueeLeft 42s linear infinite;
+}
 
           .marquee-track-reverse {
             animation: marqueeRight 42s linear infinite;
           }
+
+          .marquee-wrapper,
+.marquee-track,
+.no-scrollbar {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.marquee-track {
+  contain: content;
+}
 
           @keyframes marqueeLeft {
             0% {

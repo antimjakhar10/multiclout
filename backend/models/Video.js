@@ -40,6 +40,11 @@ seoKeywords: {
       trim: true,
     },
 
+    relatedCategories: {
+  type: [String],
+  default: [],
+},
+
     thumbnail: {
       type: String,
       required: true,
@@ -54,6 +59,20 @@ seoKeywords: {
       type: String,
       default: "",
     },
+    vimeoUri: {
+  type: String,
+  default: "",
+},
+
+vimeoId: {
+  type: String,
+  default: "",
+},
+
+vimeoEmbedUrl: {
+  type: String,
+  default: "",
+},
 
     duration: {
       type: String,
@@ -126,6 +145,26 @@ approvedBy: {
   type: mongoose.Schema.Types.ObjectId,
   ref: "Admin",
   default: null,
+},
+adminActionType: {
+  type: String,
+  enum: ["", "approved", "rejected", "deleted"],
+  default: "",
+},
+
+adminActionReason: {
+  type: String,
+  default: "",
+},
+
+adminActionAt: {
+  type: Date,
+  default: null,
+},
+
+isNotificationRead: {
+  type: Boolean,
+  default: false,
 },
   },
   { timestamps: true }

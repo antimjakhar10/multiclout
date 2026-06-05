@@ -3,6 +3,7 @@ const {
   compressVideo,
   getPublicUploadPath,
 } = require("../utils/compressHelper");
+const { uploadToVimeo } = require("../utils/vimeoHelper");
 
 const makeSlug = (value = "") =>
   value
@@ -77,6 +78,7 @@ const serializeVideoForDetail = (video, user = null) => {
 
 const publicApprovedFilter = {
   active: true,
+  uploadedByRole: "admin",
   $or: [
     { approvalStatus: "approved" },
     { approvalStatus: { $exists: false } },
@@ -97,15 +99,18 @@ const getWatchPageData = async (req, res) => {
     );
 
     const topPicks = serializedVideos
-  .filter((v) => v.topPick === true)
-  .sort((a, b) => {
-    const orderA = Number(a.order ?? 0);
-    const orderB = Number(b.order ?? 0);
+      .filter((v) => v.topPick === true)
+      .sort((a, b) => {
+        const orderA = Number(a.order ?? 0);
+        const orderB = Number(b.order ?? 0);
 
-    if (orderA !== orderB) return orderA - orderB;
+        if (orderA !== orderB) return orderA - orderB;
 
-    return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
-  });
+        return (
+          new Date(b.updatedAt || b.createdAt) -
+          new Date(a.updatedAt || a.createdAt)
+        );
+      });
 
     const grouped = {};
     serializedVideos.forEach((video) => {
@@ -142,13 +147,21 @@ const getWatchPageData = async (req, res) => {
   }
 };
 
-
 const getVideoBySlug = async (req, res) => {
   try {
+    const { slug } = req.params;
+
+    const publicApprovedFilter = req.user?.isAdmin
+      ? {}
+      : {
+          active: true,
+          approvalStatus: "approved",
+        };
+
     const video = await Video.findOne({
-  slug: req.params.slug,
-  ...publicApprovedFilter,
-});
+      slug,
+      ...publicApprovedFilter,
+    });
 
     if (!video) {
       return res.status(404).json({
@@ -158,22 +171,79 @@ const getVideoBySlug = async (req, res) => {
     }
 
     const relatedVideos = await Video.find({
-      ...publicApprovedFilter,
-      category: video.category,
       _id: { $ne: video._id },
+      category: video.category,
+      ...publicApprovedFilter,
     })
       .sort({ order: 1, createdAt: -1 })
-      .limit(8);
+      .limit(3);
+
+    // recommended category sections
+
+    const categoryReferenceVideo = await Video.findOne({
+      category: video.category,
+      relatedCategories: { $exists: true, $ne: [] },
+    });
+
+    const relatedCategoryNames =
+      categoryReferenceVideo?.relatedCategories || [];
+
+    const allSectionsVideos = await Video.find({
+      _id: { $ne: video._id },
+      category: { $in: relatedCategoryNames },
+      ...publicApprovedFilter,
+    }).sort({ order: 1, createdAt: -1 });
+
+    const groupedSections = {};
+
+    allSectionsVideos.forEach((item) => {
+      const key = item.category?.trim() || "Other";
+
+      if (!groupedSections[key]) {
+        groupedSections[key] = [];
+      }
+
+      if (groupedSections[key].length < 5) {
+        groupedSections[key].push(serializeVideoForList(item, req.user));
+      }
+    });
+
+    if (!relatedCategoryNames.length) {
+      return res.json({
+        success: true,
+
+        video: serializeVideoForDetail(video, req.user),
+
+        relatedVideos: relatedVideos.map((item) =>
+          serializeVideoForList(item, req.user),
+        ),
+
+        recommendedCategories: [],
+      });
+    }
+
+    const recommendedCategories = Object.keys(groupedSections)
+      .slice(0, 4)
+      .map((name) => ({
+        title: name,
+        slug: normalizeCategorySlug(name),
+        videos: groupedSections[name],
+      }));
 
     res.json({
       success: true,
+
       video: serializeVideoForDetail(video, req.user),
+
       relatedVideos: relatedVideos.map((item) =>
         serializeVideoForList(item, req.user),
       ),
+
+      recommendedCategories,
     });
   } catch (error) {
     console.error("getVideoBySlug error:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to fetch video",
@@ -238,7 +308,8 @@ const getVideoCategories = async (req, res) => {
       .filter(Boolean)
       .filter(
         (item, index, arr) =>
-          arr.findIndex((x) => x.toLowerCase() === item.toLowerCase()) === index
+          arr.findIndex((x) => x.toLowerCase() === item.toLowerCase()) ===
+          index,
       )
       .sort((a, b) => a.localeCompare(b));
 
@@ -261,13 +332,17 @@ const getVideoCategories = async (req, res) => {
 
 const createVideo = async (req, res) => {
   try {
-    const {
+    console.log("========== CREATE VIDEO HIT ==========");
+    console.log("REQ FILES:", req.files);
+    console.log("REQ BODY:", req.body);
+    let {
       title,
       description,
       seoTitle,
       seoDescription,
       seoKeywords,
       category,
+      relatedCategories,
       videoUrl,
       duration,
       views,
@@ -293,11 +368,40 @@ const createVideo = async (req, res) => {
       : "";
 
     let videoFile = "";
+    let vimeoUri = "";
+    let vimeoId = "";
+    let vimeoEmbedUrl = "";
 
     if (req.files?.videoFile?.[0]) {
+      console.log("!!! VIMEO DEBUG: Video file detected for upload !!!");
       const inputPath = req.files.videoFile[0].path;
-      const compressedPath = await compressVideo(inputPath);
-      videoFile = getPublicUploadPath(compressedPath);
+      try {
+        console.log(
+          `[Vimeo Controller] Starting direct upload for high quality: ${inputPath}`,
+        );
+        // Upload to Vimeo directly (Skip local compression for speed/reliability)
+        const vimeoData = await uploadToVimeo(
+          inputPath,
+          title,
+          description || "",
+        );
+
+        console.log("[Vimeo Controller] Upload Success:", vimeoData);
+
+        videoUrl = vimeoData.embedUrl;
+        videoFile = "";
+        vimeoUri = vimeoData.uri;
+        vimeoId = vimeoData.vimeoId;
+        vimeoEmbedUrl = vimeoData.embedUrl;
+      } catch (uploadError) {
+        console.error("!!! VIMEO CONTROLLER ERROR !!!", uploadError);
+        return res.status(500).json({
+          success: false,
+          message:
+            "Video upload to Vimeo failed. Please check your credentials.",
+          error: uploadError.message,
+        });
+      }
     }
 
     if (!thumbnail) {
@@ -324,9 +428,17 @@ const createVideo = async (req, res) => {
       seoDescription: seoDescription || "",
       seoKeywords: seoKeywords || "",
       category,
+      relatedCategories: relatedCategories
+        ? Array.isArray(relatedCategories)
+          ? relatedCategories
+          : JSON.parse(relatedCategories)
+        : [],
       thumbnail,
       videoFile,
       videoUrl,
+      vimeoUri,
+      vimeoId,
+      vimeoEmbedUrl,
       duration,
       views: views || "0",
       likes: likes || "0",
@@ -345,7 +457,7 @@ const createVideo = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Video added successfully",
+      message: "Video added successfully to Vimeo",
       video: newVideo,
     });
   } catch (error) {
@@ -371,6 +483,7 @@ const updateVideo = async (req, res) => {
       seoDescription,
       seoKeywords,
       category,
+      relatedCategories,
       videoUrl,
       duration,
       views,
@@ -404,9 +517,34 @@ const updateVideo = async (req, res) => {
     }
 
     if (req.files?.videoFile?.[0]) {
+      console.log("!!! VIMEO DEBUG: Video file detected for update !!!");
       const inputPath = req.files.videoFile[0].path;
-      const compressedPath = await compressVideo(inputPath);
-      video.videoFile = getPublicUploadPath(compressedPath);
+      try {
+        console.log(
+          `[Vimeo Controller] Starting direct update for: ${inputPath}`,
+        );
+        // Upload to Vimeo directly
+        const vimeoData = await uploadToVimeo(
+          inputPath,
+          title || video.title,
+          description || video.description || "",
+        );
+
+        console.log("[Vimeo Controller] Update Success:", vimeoData);
+
+        video.videoUrl = vimeoData.embedUrl;
+        video.videoFile = "";
+        video.vimeoUri = vimeoData.uri;
+        video.vimeoId = vimeoData.vimeoId;
+        video.vimeoEmbedUrl = vimeoData.embedUrl;
+      } catch (uploadError) {
+        console.error("!!! VIMEO CONTROLLER UPDATE ERROR !!!", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "Video update to Vimeo failed.",
+          error: uploadError.message,
+        });
+      }
     }
 
     video.title = title ?? video.title;
@@ -415,7 +553,14 @@ const updateVideo = async (req, res) => {
     video.seoDescription = seoDescription ?? video.seoDescription;
     video.seoKeywords = seoKeywords ?? video.seoKeywords;
     video.category = category ?? video.category;
-    video.videoUrl = videoUrl ?? video.videoUrl;
+    if (!req.files?.videoFile?.[0] && videoUrl !== undefined) {
+      video.videoUrl = videoUrl;
+    }
+    video.relatedCategories = relatedCategories
+      ? Array.isArray(relatedCategories)
+        ? relatedCategories
+        : JSON.parse(relatedCategories)
+      : video.relatedCategories;
     video.duration = duration ?? video.duration;
     video.views = views ?? video.views;
     video.likes = likes ?? video.likes;
@@ -443,9 +588,9 @@ const updateVideo = async (req, res) => {
 const incrementVideoView = async (req, res) => {
   try {
     const video = await Video.findOne({
-  slug: req.params.slug,
-  ...publicApprovedFilter,
-});
+      slug: req.params.slug,
+      ...publicApprovedFilter,
+    });
     if (!video) {
       return res
         .status(404)
@@ -471,9 +616,9 @@ const incrementVideoView = async (req, res) => {
 const incrementVideoLike = async (req, res) => {
   try {
     const video = await Video.findOne({
-  slug: req.params.slug,
-  ...publicApprovedFilter,
-});
+      slug: req.params.slug,
+      ...publicApprovedFilter,
+    });
     if (!video) {
       return res
         .status(404)
@@ -499,9 +644,9 @@ const incrementVideoLike = async (req, res) => {
 const incrementVideoShare = async (req, res) => {
   try {
     const video = await Video.findOne({
-  slug: req.params.slug,
-  ...publicApprovedFilter,
-});
+      slug: req.params.slug,
+      ...publicApprovedFilter,
+    });
     if (!video) {
       return res
         .status(404)
@@ -528,7 +673,8 @@ const incrementVideoShare = async (req, res) => {
 
 const userUploadVideo = async (req, res) => {
   try {
-    const { title, description, category, videoUrl, duration } = req.body;
+    const { title, description, category, duration } = req.body;
+    let { videoUrl } = req.body;
 
     if (!title || !category) {
       return res.status(400).json({
@@ -544,9 +690,34 @@ const userUploadVideo = async (req, res) => {
     let videoFile = "";
 
     if (req.files?.videoFile?.[0]) {
+      console.log("!!! VIMEO DEBUG: User video file detected !!!");
       const inputPath = req.files.videoFile[0].path;
-      const compressedPath = await compressVideo(inputPath);
-      videoFile = getPublicUploadPath(compressedPath);
+      try {
+        console.log(
+          `[Vimeo Controller] Starting direct user upload: ${inputPath}`,
+        );
+        // Upload to Vimeo directly
+        const vimeoData = await uploadToVimeo(
+          inputPath,
+          title,
+          description || "",
+        );
+
+        console.log("[Vimeo Controller] User Upload Success:", vimeoData);
+
+        videoFile = "";
+        videoUrl = vimeoData.embedUrl;
+      } catch (uploadError) {
+        console.error(
+          "!!! VIMEO CONTROLLER USER UPLOAD ERROR !!!",
+          uploadError,
+        );
+        return res.status(500).json({
+          success: false,
+          message: "Video upload failed.",
+          error: uploadError.message,
+        });
+      }
     }
 
     if (!thumbnail) {
@@ -667,16 +838,31 @@ const updateUserVideoStatus = async (req, res) => {
     }
 
     video.approvalStatus = status;
-    video.rejectionReason = status === "rejected" ? rejectionReason : "";
 
-   if (status === "approved") {
+if (status === "approved") {
   video.active = true;
   video.approvedAt = new Date();
   video.approvedBy = req.admin?._id || null;
+
+  video.rejectionReason = "";
+
+  video.adminActionType = "approved";
+  video.adminActionReason = "Your video has been approved by admin.";
+  video.adminActionAt = new Date();
+  video.isNotificationRead = false;
 }
 
 if (status === "rejected") {
   video.active = false;
+
+  video.rejectionReason = rejectionReason || "";
+
+  video.adminActionType = "rejected";
+  video.adminActionReason =
+    rejectionReason || "Your video was rejected by admin.";
+
+  video.adminActionAt = new Date();
+  video.isNotificationRead = false;
 }
 
 if (status === "pending") {
@@ -700,13 +886,50 @@ if (status === "pending") {
 
 const deleteVideo = async (req, res) => {
   try {
-    const video = await Video.findByIdAndDelete(req.params.id);
+    const video = await Video.findById(req.params.id);
 
     if (!video) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Video not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Video not found",
+      });
     }
+
+    const reason = req.body.reason || "";
+
+    // USER VIDEO DELETE FLOW
+    if (video.uploadedByRole === "user") {
+      await Video.create({
+        title: video.title,
+        slug: `${video.slug}-deleted-${Date.now()}`,
+        description: video.description || "",
+        category: video.category || "General",
+        thumbnail: video.thumbnail || "uploads/default.jpg",
+
+        uploadedBy: video.uploadedBy,
+        uploadedByRole: "user",
+
+        approvalStatus: "rejected",
+
+        adminActionType: "deleted",
+        adminActionReason: reason,
+        adminActionAt: new Date(),
+
+        isNotificationRead: false,
+
+        active: false,
+      });
+
+      await Video.findByIdAndDelete(req.params.id);
+
+      return res.json({
+        success: true,
+        message: "Video deleted successfully",
+      });
+    }
+
+    // ADMIN VIDEO DELETE
+    await Video.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
@@ -714,9 +937,165 @@ const deleteVideo = async (req, res) => {
     });
   } catch (error) {
     console.error("deleteVideo error:", error);
-    res.status(500).json({ success: false, message: "Failed to delete video" });
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete video",
+    });
   }
 };
+
+const getUserNotifications = async (req, res) => {
+  try {
+    const notifications = await Video.find({
+      uploadedBy: req.user._id,
+      uploadedByRole: "user",
+      adminActionType: {
+        $in: ["approved", "rejected", "deleted"],
+      },
+    }).sort({ adminActionAt: -1 });
+
+    res.json({
+      success: true,
+      notifications,
+    });
+  } catch (error) {
+    console.error("getUserNotifications error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch notifications",
+    });
+  }
+};
+
+const markNotificationsRead = async (req, res) => {
+  try {
+    await Video.updateMany(
+      {
+        uploadedBy: req.user._id,
+        uploadedByRole: "user",
+        isNotificationRead: false,
+      },
+      {
+        $set: {
+          isNotificationRead: true,
+        },
+      }
+    );
+
+    res.json({
+      success: true,
+      message: "Notifications marked as read",
+    });
+  } catch (error) {
+    console.error("markNotificationsRead error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to mark notifications",
+    });
+  }
+};
+
+const deleteNotification = async (req, res) => {
+  try {
+    const notification = await Video.findOne({
+      _id: req.params.id,
+      uploadedBy: req.user._id,
+    });
+
+    if (!notification) {
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
+    }
+
+    await Video.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: "Notification deleted successfully",
+    });
+  } catch (error) {
+    console.error("deleteNotification error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete notification",
+    });
+  }
+};
+
+const getCreatorVideos = async (req, res) => {
+  try {
+    const videos = await Video.find({
+      active: true,
+      uploadedByRole: "user",
+      approvalStatus: "approved",
+    }).sort({
+      order: 1,
+      createdAt: -1,
+    });
+
+    const serializedVideos = videos.map((video) =>
+      serializeVideoForList(video, req.user)
+    );
+
+    const topPicks = serializedVideos
+      .filter((video) => video.topPick === true)
+      .sort((a, b) => {
+        const orderA = Number(a.order ?? 0);
+        const orderB = Number(b.order ?? 0);
+
+        if (orderA !== orderB) return orderA - orderB;
+
+        return (
+          new Date(b.updatedAt || b.createdAt) -
+          new Date(a.updatedAt || a.createdAt)
+        );
+      });
+
+    const grouped = {};
+
+    serializedVideos.forEach((video) => {
+      const key = video.category?.trim() || "Other";
+
+      if (!grouped[key]) grouped[key] = [];
+
+      grouped[key].push(video);
+    });
+
+    const categories = Object.keys(grouped).map((name) => ({
+      name,
+      slug: normalizeCategorySlug(name),
+      count: grouped[name].length,
+    }));
+
+    const sections = Object.keys(grouped).map((name) => ({
+      title: name,
+      slug: normalizeCategorySlug(name),
+      videos: grouped[name].slice(0, 12),
+      total: grouped[name].length,
+    }));
+
+    res.json({
+      success: true,
+      topPicks,
+      categories,
+      sections,
+    });
+  } catch (error) {
+    console.error("getCreatorVideos error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch creator videos",
+    });
+  }
+};
+
 
 module.exports = {
   getWatchPageData,
@@ -734,4 +1113,8 @@ module.exports = {
   userUploadVideo,
   getMyUploadedVideos,
   updateUserVideoStatus,
+  getCreatorVideos,
+  getUserNotifications,
+markNotificationsRead,
+deleteNotification,
 };

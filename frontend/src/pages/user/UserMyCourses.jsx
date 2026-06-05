@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PlayCircle, ShoppingBag } from "lucide-react";
-import { API, API_HOST } from "../../utils/api";
-
-const getImageUrl = (img) => {
-  if (!img) return "";
-  if (img.startsWith("http")) return img;
-  if (img.startsWith("/uploads")) return `${API_HOST}${img}`;
-  return `${API_HOST}/${img}`;
-};
+import { API } from "../../utils/api";
+import { getImageUrl } from "../../utils/videoHelpers";
 
 function UserMyCourses() {
   const navigate = useNavigate();
@@ -47,7 +41,7 @@ function UserMyCourses() {
       ...item,
       orderDate: order.createdAt,
       orderId: order._id,
-    }))
+    })),
   );
 
   if (loading) {
@@ -91,7 +85,9 @@ function UserMyCourses() {
                 className="overflow-hidden rounded-[26px] border border-white/10 bg-white/[0.04]"
               >
                 <img
-                  src={getImageUrl(item.image || course.image)}
+                  src={getImageUrl(
+                    course?.image || item?.course?.image || item?.image,
+                  )}
                   alt={item.title}
                   className="h-44 w-full object-cover"
                 />

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import {
   FiStar,
   FiChevronRight,
+  FiChevronLeft,
   FiClock,
   FiCheck,
   FiShoppingCart,
@@ -14,6 +15,7 @@ import { useCart } from "../context/CartContext";
 import { motion } from "framer-motion";
 
 function CoursesSection() {
+  const sliderRef = useRef(null);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("All Categories");
@@ -56,11 +58,11 @@ function CoursesSection() {
   }, [courses, activeCategory]);
 
   const resolveImage = (course) => {
-  return getImageUrl(
-    course?.image,
-    "https://via.placeholder.com/600x400?text=Course"
-  );
-};
+    return getImageUrl(
+      course?.image,
+      "https://via.placeholder.com/600x400?text=Course",
+    );
+  };
 
   const getHighlights = (course) => {
     if (
@@ -105,6 +107,18 @@ function CoursesSection() {
       navigate(`/courses/id/${course._id}`);
     }
   };
+
+  const scrollCourses = (direction) => {
+    if (!sliderRef.current) return;
+
+    const scrollAmount = 340;
+
+    sliderRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
   const renderCourseCard = (course, idx, isSlider = false) => {
     const image = resolveImage(course);
     const rating =
@@ -141,12 +155,12 @@ function CoursesSection() {
         >
           <div className="relative h-36 overflow-hidden sm:h-40 lg:h-44">
             <img
-  src={image}
-  alt={course.title}
-  loading="lazy"
-  draggable="false"
-  className="h-full w-full object-cover"
-/>
+              src={image}
+              alt={course.title}
+              loading="lazy"
+              draggable="false"
+              className="h-full w-full object-cover"
+            />
             {course.tag && (
               <span className="absolute left-3 top-3 rounded-full bg-[#dff7ef] px-2.5 py-1 text-[10px] font-bold text-[#116149] shadow-sm sm:px-3 sm:text-[11px]">
                 {course.tag}
@@ -446,19 +460,39 @@ function CoursesSection() {
               ))}
             </div>
           ) : (
-            <div
-              className="flex gap-4 overflow-x-auto overflow-y-hidden pb-2 hide-scrollbar sm:gap-5 lg:gap-6"
-              style={{
-                scrollBehavior: "smooth",
-                WebkitOverflowScrolling: "touch",
-                willChange: "scroll-position",
-              }}
-              onMouseLeave={() => setHoveredCourseId(null)}
-            >
-              {filteredCourses.map((course, idx) =>
-                renderCourseCard(course, idx, true),
-              )}
-            </div>
+            <div className="relative">
+  {/* LEFT BUTTON */}
+  <button
+    onClick={() => scrollCourses("left")}
+    className="absolute left-[-12px] top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-lg transition hover:border-[#2d7084] hover:text-[#2d7084] lg:flex"
+  >
+    <FiChevronLeft size={22} />
+  </button>
+
+  {/* RIGHT BUTTON */}
+  <button
+    onClick={() => scrollCourses("right")}
+    className="absolute right-[-12px] top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-lg transition hover:border-[#2d7084] hover:text-[#2d7084] lg:flex"
+  >
+    <FiChevronRight size={22} />
+  </button>
+
+  {/* COURSES SLIDER */}
+  <div
+    ref={sliderRef}
+    className="flex gap-4 overflow-x-auto overflow-y-hidden pb-2 hide-scrollbar sm:gap-5 lg:gap-6"
+    style={{
+      scrollBehavior: "smooth",
+      WebkitOverflowScrolling: "touch",
+      willChange: "scroll-position",
+    }}
+    onMouseLeave={() => setHoveredCourseId(null)}
+  >
+    {filteredCourses.map((course, idx) =>
+      renderCourseCard(course, idx, true),
+    )}
+  </div>
+</div>
           )}
         </div>
 

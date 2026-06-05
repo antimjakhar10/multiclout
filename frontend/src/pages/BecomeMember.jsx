@@ -51,7 +51,7 @@ function BecomeMember() {
     >
       <Navbar />
 
-      <section className="relative overflow-hidden pt-[80px] pb-12 sm:pt-[115px] lg:pt-[130px] lg:pb-16">
+      <section className="relative overflow-hidden pt-[45px] pb-10 sm:pt-[60px] lg:pt-[70px] lg:pb-14">
         <div
           className="absolute inset-0"
           style={{ background: "var(--mc-surface-gradient)" }}
@@ -236,7 +236,7 @@ function BecomeMember() {
                       className="pb-1 text-sm"
                       style={{ color: "var(--mc-text-faint)" }}
                     >
-                      / Lifetime
+                      / One Year
                     </span>
                   </div>
 
@@ -283,6 +283,98 @@ function BecomeMember() {
                   </a>
                 </div>
               ))}
+
+              {/* FRANCHISE MEMBER CARD */}
+<div
+  className="relative flex h-full flex-col rounded-[30px] border p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)] transition duration-300 hover:-translate-y-1"
+  style={{
+    background: "var(--mc-bg-card)",
+    borderColor: "var(--mc-border)",
+  }}
+>
+  {/* BADGES */}
+  <div className="mb-5 flex items-center justify-between gap-3">
+    <span className="rounded-full border border-[#2f8f9d]/20 bg-[#2f8f9d]/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-[#2f8f9d]">
+      Franchise Access
+    </span>
+
+    <span className="rounded-full bg-gradient-to-r from-[#2f8f9d] to-[#58b8b4] px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.18em] text-white shadow-lg">
+      BUSINESS GROWTH
+    </span>
+  </div>
+
+  {/* TITLE */}
+  <h3 className="text-[26px] font-bold leading-tight">
+    Multiclout Franchise Membership
+  </h3>
+
+  {/* PRICE */}
+  <div className="mt-6 flex flex-wrap items-end gap-2">
+    <span className="text-sm font-semibold text-cyan-300">
+  Franchise Plans
+</span>
+  </div>
+
+  {/* RANGES */}
+  {/* <div className="mt-5 flex flex-wrap gap-3">
+    {["1 Lakh", "2 Lakh", "4 Lakh", "5 Lakh"].map((item) => (
+      <span
+        key={item}
+        className="rounded-full border border-[#2f8f9d]/20 bg-[#2f8f9d]/10 px-4 py-2 text-sm font-bold text-[#2f8f9d]"
+      >
+        {item}
+      </span>
+    ))}
+  </div> */}
+
+  {/* DESCRIPTION */}
+  <p
+    className="mt-6 border-b pb-4 text-[15px] font-semibold leading-7"
+    style={{
+      borderColor: "var(--mc-border)",
+      color: "var(--mc-text-main)",
+    }}
+  >
+    Build your own profitable Multiclout franchise with complete setup,
+training and business growth support.
+  </p>
+
+  {/* FEATURES */}
+  <div className="mt-5 flex-1 space-y-3">
+    {[
+  "1 Lakh Startup Franchise Plan",
+  "2 Lakh Growth Franchise Plan",
+  "4 Lakh Advanced Business Setup",
+  "5 Lakh Premium Franchise Model",
+  "Online + Offline Business Training",
+  "Marketing & Branding Support",
+  "Student Leads & Growth Guidance",
+].map((item, i) => (
+      <div
+        key={i}
+        className="flex items-start gap-3 text-sm leading-7"
+        style={{ color: "var(--mc-text-soft)" }}
+      >
+        <CheckCircle2
+          size={17}
+          className="mt-1 shrink-0 text-cyan-300"
+        />
+        <span>{item}</span>
+      </div>
+    ))}
+  </div>
+
+  {/* BUTTON */}
+  <a
+    href="https://wa.me/917206123452"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-8 inline-flex h-12 w-full items-center justify-center rounded-2xl bg-gradient-to-r from-[#2f8f9d] to-[#58b8b4] px-5 text-sm font-bold text-white shadow-[0_16px_40px_rgba(45,112,132,0.28)] transition hover:scale-[1.01]"
+  >
+    Contact On WhatsApp
+    <span className="ml-2">→</span>
+  </a>
+</div>
             </div>
           ) : (
             <div

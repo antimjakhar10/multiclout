@@ -58,10 +58,10 @@ function Auth() {
 
       setStep("otp");
       setStatusText(
-  result.demoOtp
-    ? `Demo OTP: ${result.demoOtp}`
-    : result.message || "OTP sent successfully"
-);
+        result.demoOtp
+          ? `Your OTP: ${result.demoOtp}`
+          : result.message || "OTP sent successfully",
+      );
       startCountdown();
     } catch (err) {
       console.error(err);
@@ -227,7 +227,9 @@ function Auth() {
 
                   <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-300">
                     <span>
-                      {countdown > 0 ? `Resend in ${countdown}s` : "Didn’t receive OTP?"}
+                      {countdown > 0
+                        ? `Resend in ${countdown}s`
+                        : "Didn’t receive OTP?"}
                     </span>
                     <button
                       type="button"
@@ -255,7 +257,13 @@ function Auth() {
               )}
 
               {statusText ? (
-                <p className="mt-3 text-center text-xs text-emerald-300">
+                <p
+                  className={`mt-4 text-center font-bold tracking-wide ${
+                    statusText.includes("Your OTP")
+                      ? "text-[18px] text-[#ff9d9d]"
+                      : "text-sm text-emerald-300"
+                  }`}
+                >
                   {statusText}
                 </p>
               ) : null}

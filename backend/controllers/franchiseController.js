@@ -28,6 +28,13 @@ const getBlankFranchiseData = () => ({
     image: "",
     stats: [],
   },
+
+  franchiseBannerSection: {
+  heading: "",
+  title: "",
+  subtitle: "",
+  image: "",
+},
   
   factsSection: {
   heading: "",
@@ -136,7 +143,15 @@ const saveFranchiseData = async (req, res) => {
 
 const createFranchiseEnquiry = async (req, res) => {
   try {
-    const { name, email, phone, city, investmentRange, message } = req.body;
+    const {
+  name,
+  email,
+  phone,
+  city,
+  state,
+  investmentRange,
+  message,
+} = req.body;
 
     if (!name || !email || !phone) {
       return res.status(400).json({
@@ -153,13 +168,14 @@ const createFranchiseEnquiry = async (req, res) => {
     }
 
     const enquiry = await FranchiseEnquiry.create({
-      name,
-      email,
-      phone,
-      city,
-      investmentRange,
-      message,
-    });
+  name,
+  email,
+  phone,
+  city,
+  state,
+  investmentRange,
+  message,
+});
 
     res.status(201).json({
       success: true,

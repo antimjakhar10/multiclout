@@ -106,26 +106,63 @@ function UserVideosAdmin() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this user video?")) return;
+ const handleDelete = async (id) => {
+  try {
+    // STEP 1 → REASON
+    const reason = window.prompt(
+      "Enter delete reason:"
+    );
 
-    try {
-      const res = await fetch(`${API}/videos/admin/delete/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${adminToken}` },
-      });
+    // cancel pressed
+    if (reason === null) return;
 
-      const data = await res.json();
-
-      if (data.success) {
-        fetchVideos();
-      } else {
-        alert(data.message || "Delete failed");
-      }
-    } catch (error) {
-      alert("Delete failed");
+    // empty reason not allowed
+    if (!reason.trim()) {
+      alert("Delete reason is required");
+      return;
     }
-  };
+
+    // STEP 2 → CONFIRM DELETE
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete this video?\n\nReason: ${reason}`
+    );
+
+    if (!confirmDelete) return;
+
+    // STEP 3 → DELETE API
+    const res = await fetch(
+      `${API}/videos/admin/delete/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
+        body: JSON.stringify({
+          reason,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+
+  // instantly remove from UI
+  setVideos((prev) =>
+    prev.filter((item) => item._id !== id)
+  );
+
+  // success popup
+  alert("Video deleted successfully");
+} else {
+      alert(data.message || "Delete failed");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Delete failed");
+  }
+};
 
   const statusClass = {
     pending: "bg-yellow-100 text-yellow-700",
@@ -318,8 +355,8 @@ function UserVideosAdmin() {
 
 function ViewVideoModal({ video, onClose }) {
   const videoSrc = video.videoFile
-  ? getMediaUrl(video.videoFile)
-  : video.videoUrl || "";
+    ? getMediaUrl(video.videoFile)
+    : video.videoUrl || "";
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4">

@@ -61,14 +61,14 @@ exports.sendOtp = async (req, res) => {
     );
 
     console.log("===================================");
-    console.log(`DEMO OTP for ${trimmedMobile}`);
+    console.log(`Your OTP for ${trimmedMobile}`);
     console.log(`Purpose: ${purpose}`);
     console.log(`OTP: ${otp}`);
     console.log("===================================");
 
     return res.status(200).json({
       success: true,
-      message: "Demo OTP generated. Check backend terminal.",
+      message: "OTP generated. Check backend terminal.",
       demoOtp: otp,
     });
   } catch (error) {

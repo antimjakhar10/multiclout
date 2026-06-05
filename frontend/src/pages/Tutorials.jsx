@@ -68,11 +68,11 @@ function Tutorials() {
 
         <div className="relative mx-auto max-w-[1440px] px-5 py-14 md:px-8 md:py-16">
           <div className="mx-auto flex max-w-3xl flex-col items-center px-2 text-center sm:px-0">
-            <div className="mb-4 flex items-center justify-center gap-2 text-sm text-white/75">
+            {/* <div className="mb-4 flex items-center justify-center gap-2 text-sm text-white/75">
               <span>Home</span>
               <ChevronRight size={16} />
               <span className="text-[#41d7c6]">Tutorials</span>
-            </div>
+            </div> */}
 
             <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#41d7c6]">
               <Sparkles size={14} />
@@ -91,12 +91,12 @@ function Tutorials() {
 
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/85">
-                <BookOpen size={16} className="text-[#41d7c6]" />
+                <BookOpen size={20} className="text-[#41d7c6]" />
                 Structured learning
               </div>
 
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/85">
-                <MonitorPlay size={16} className="text-[#41d7c6]" />
+                <MonitorPlay size={20} className="text-[#41d7c6]" />
                 Instant video access
               </div>
             </div>

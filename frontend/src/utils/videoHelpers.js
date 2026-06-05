@@ -30,28 +30,48 @@ const normalizePath = (path = "") => {
 
 const buildUrl = (host, cleanPath) => {
   if (!cleanPath) return "";
-  if (cleanPath.startsWith("uploads/")) return `${host}/${cleanPath}`;
+
+  if (cleanPath.startsWith("uploads/")) {
+    return `${host}/${cleanPath}`;
+  }
+
+  if (cleanPath.startsWith("/uploads/")) {
+    return `${host}${cleanPath}`;
+  }
+
   return `${host}/uploads/${cleanPath}`;
 };
 
 export const getImageUrl = (path = "", fallback = "") => {
   const cleanPath = normalizePath(path);
+
   if (!cleanPath) return fallback;
 
-  if (/^https?:\/\//i.test(cleanPath)) return cleanPath;
+  if (/^https?:\/\//i.test(cleanPath)) {
+    return cleanPath;
+  }
 
-  const host = IS_LOCALHOST ? LIVE_SITE_HOST : API_HOST;
-  return buildUrl(host, cleanPath);
+  // localhost pe pehle local image try karo
+  if (IS_LOCALHOST) {
+    return `${API_HOST}/${cleanPath.replace(/^\/+/, "")}`;
+  }
+
+  // live site
+  return buildUrl(API_HOST, cleanPath);
+
+  
 };
 
 export const getFallbackImageUrl = (path = "", fallback = "") => {
   const cleanPath = normalizePath(path);
+
   if (!cleanPath) return fallback;
 
-  if (/^https?:\/\//i.test(cleanPath)) return cleanPath;
+  if (/^https?:\/\//i.test(cleanPath)) {
+    return cleanPath;
+  }
 
-  const host = IS_LOCALHOST ? API_HOST : LIVE_SITE_HOST || API_HOST;
-  return buildUrl(host, cleanPath);
+  return buildUrl(API_HOST, cleanPath);
 };
 
 export const getAssetUrl = (path = "", fallback = "") => {

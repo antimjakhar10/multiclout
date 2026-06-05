@@ -63,6 +63,13 @@ const franchiseSchema = new mongoose.Schema(
       stats: { type: [cardSchema], default: [] },
     },
 
+    franchiseBannerSection: {
+  heading: { type: String, default: "" },
+  title: { type: String, default: "" },
+  subtitle: { type: String, default: "" },
+  image: { type: String, default: "" },
+},
+
     factsSection: {
   heading: { type: String, default: "" },
   backgroundImage: { type: String, default: "" },

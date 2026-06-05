@@ -15,6 +15,7 @@ const initialForm = {
   seoDescription: "",
   seoKeywords: "",
   category: "",
+  relatedCategories: [],
   videoUrl: "",
   duration: "",
   views: "0",
@@ -226,6 +227,7 @@ function VideosAdmin() {
       seoDescription: video.seoDescription || "",
       seoKeywords: video.seoKeywords || "",
       category: video.category || "",
+      relatedCategories: video.relatedCategories || [],
       videoUrl: video.videoUrl || "",
       duration: video.duration || "",
       views: video.views || "0",
@@ -263,13 +265,15 @@ function VideosAdmin() {
 
       const fd = new FormData();
 
-      Object.keys(form).forEach((key) => {
-        if (key === "category") {
-          fd.append(key, form[key].trim());
-        } else {
-          fd.append(key, form[key]);
-        }
-      });
+     Object.keys(form).forEach((key) => {
+  if (key === "relatedCategories") {
+    fd.append(key, JSON.stringify(form.relatedCategories));
+  } else if (key === "category") {
+    fd.append(key, form[key].trim());
+  } else {
+    fd.append(key, form[key]);
+  }
+});
 
       if (thumbnail) fd.append("thumbnail", thumbnail);
       if (videoFile) fd.append("videoFile", videoFile);
@@ -357,7 +361,7 @@ function VideosAdmin() {
             className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_340px]"
           >
             <div className="space-y-5">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-2">
                 <Input
                   name="title"
                   placeholder="Video title"
@@ -384,7 +388,50 @@ function VideosAdmin() {
                     Select from existing categories or enter a new one as
                     needed.
                   </p>
+
+                  
                 </div>
+
+                <div className="mt-4 md:col-span-2">
+  <label className="mb-2 block text-sm font-semibold text-[#07111a]">
+    Related Categories
+  </label>
+
+  <select
+    multiple
+    value={form.relatedCategories}
+    onChange={(e) => {
+      const values = Array.from(
+        e.target.selectedOptions,
+        (option) => option.value
+      );
+
+      setForm((prev) => ({
+        ...prev,
+        relatedCategories: values,
+      }));
+    }}
+    className="w-full rounded-xl border border-slate-300 bg-white p-3 text-[15px] text-[#07111a] outline-none transition focus:border-[#167a7a] focus:ring-2 focus:ring-[#167a7a]/10"
+    style={{
+      minHeight: "130px",
+    }}
+  >
+    {categoryOptions
+      .filter((item) => item !== form.category)
+      .map((item) => (
+        <option
+          key={item}
+          value={item}
+        >
+          {item}
+        </option>
+      ))}
+  </select>
+
+  <p className="mt-2 text-xs text-slate-500">
+    Hold Ctrl (Windows) or Command (Mac) to select multiple categories
+  </p>
+</div>
 
                 <div className="md:col-span-2 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                   <h3 className="mb-4 text-lg font-semibold text-[#07111a]">

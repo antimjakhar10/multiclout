@@ -203,7 +203,7 @@ function Footer() {
                         Address
                       </p>
                       <p className="mt-1 max-w-[420px] text-[15px] leading-7 text-slate-400">
-                        Office No : 466 - Dwarka Sector 7, Delhi - 110075
+                       Balliwala Chowk, Dehradun, Uttarakhand
                       </p>
                     </div>
                   </div>

@@ -42,7 +42,9 @@ function OtpRegistrationForm({
           setPhone(initialPhone);
           setOtpSent(true);
           setOtpVerified(true);
-          setMessage("Phone already verified. Complete your registration below.");
+          setMessage(
+            "Phone already verified. Complete your registration below.",
+          );
         }
       } catch (error) {
         console.error("OTP status check failed:", error);
@@ -89,16 +91,17 @@ function OtpRegistrationForm({
         setOtpVerified(false);
         setCountdown(60);
         setMessage(
-  res.data.demoOtp
-    ? `Demo OTP: ${res.data.demoOtp}`
-    : res.data.message || "OTP sent successfully."
-);
+          res.data.demoOtp
+            ? `Your OTP: ${res.data.demoOtp}`
+            : res.data.message || "OTP sent successfully.",
+        );
       } else {
         setMessage(res.data.message || "Failed to send OTP.");
       }
     } catch (error) {
       setMessage(
-        error?.response?.data?.message || "Something went wrong while sending OTP."
+        error?.response?.data?.message ||
+          "Something went wrong while sending OTP.",
       );
     } finally {
       setLoading(false);
@@ -138,7 +141,8 @@ function OtpRegistrationForm({
       }
     } catch (error) {
       setMessage(
-        error?.response?.data?.message || "Something went wrong while verifying OTP."
+        error?.response?.data?.message ||
+          "Something went wrong while verifying OTP.",
       );
     } finally {
       setLoading(false);
@@ -178,7 +182,8 @@ function OtpRegistrationForm({
       }
     } catch (error) {
       setMessage(
-        error?.response?.data?.message || "Something went wrong while registering."
+        error?.response?.data?.message ||
+          "Something went wrong while registering.",
       );
     } finally {
       setLoading(false);
@@ -248,7 +253,9 @@ function OtpRegistrationForm({
 
                 <div className="mt-3 flex items-center justify-between gap-3 text-xs text-slate-300">
                   <span>
-                    {countdown > 0 ? `Resend in ${countdown}s` : "Didn’t receive OTP?"}
+                    {countdown > 0
+                      ? `Resend in ${countdown}s`
+                      : "Didn’t receive OTP?"}
                   </span>
                   <button
                     type="button"
@@ -313,10 +320,12 @@ function OtpRegistrationForm({
 
         {message ? (
           <p
-            className={`mt-4 text-sm ${
-              otpVerified || message.toLowerCase().includes("success")
-                ? "text-emerald-300"
-                : "text-red-300"
+            className={`mt-4 text-center font-bold tracking-wide ${
+              message.includes("Your OTP")
+                ? "text-[18px] text-[#ff9d9d]"
+                : otpVerified || message.toLowerCase().includes("success")
+                  ? "text-sm text-emerald-300"
+                  : "text-sm text-red-300"
             }`}
           >
             {message}

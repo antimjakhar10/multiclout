@@ -26,7 +26,7 @@ function parseCountValue(value) {
 function CountUpValue({ value, duration = 1600 }) {
   const numericValue = parseCountValue(value);
   const [displayValue, setDisplayValue] = useState(
-    numericValue !== null ? 0 : value
+    numericValue !== null ? 0 : value,
   );
 
   useEffect(() => {
@@ -74,26 +74,21 @@ function Franchise() {
     email: "",
     phone: "",
     city: "",
+    state: "",
     investmentRange: "",
     message: "",
   });
 
   const pageBg =
     "bg-[var(--mc-bg-main)] text-[var(--mc-text-main)] md:bg-white md:text-slate-900";
-  const sectionBg =
-    "bg-[var(--mc-bg-main)] md:bg-white";
-  const sectionAltBg =
-    "bg-[var(--mc-surface-gradient)] md:bg-[#f3f7fa]";
+  const sectionBg = "bg-[var(--mc-bg-main)] md:bg-white";
+  const sectionAltBg = "bg-[var(--mc-surface-gradient)] md:bg-[#f3f7fa]";
   const cardBg =
     "border border-[var(--mc-border)] bg-[var(--mc-bg-card)] text-[var(--mc-text-main)] md:border-slate-200 md:bg-white md:text-slate-900";
-  const headingText =
-    "text-[var(--mc-text-main)] md:text-[#072b57]";
-  const bodyText =
-    "text-[var(--mc-text-soft)] md:text-slate-700";
-  const mutedText =
-    "text-[var(--mc-text-soft)] md:text-slate-600";
-  const labelText =
-    "text-[var(--mc-text-main)] md:text-[#07111a]";
+  const headingText = "text-[var(--mc-text-main)] md:text-[#072b57]";
+  const bodyText = "text-[var(--mc-text-soft)] md:text-slate-700";
+  const mutedText = "text-[var(--mc-text-soft)] md:text-slate-600";
+  const labelText = "text-[var(--mc-text-main)] md:text-[#07111a]";
   const inputClass =
     "w-full rounded-xl border border-[var(--mc-border)] bg-[var(--mc-bg-card)] px-4 py-3 text-sm text-[var(--mc-text-main)] outline-none placeholder:text-[var(--mc-text-soft)] focus:border-[#13b7dc] md:rounded-md md:border-slate-300 md:bg-white md:text-slate-900 md:focus:border-[#0b5c8e]";
 
@@ -116,7 +111,6 @@ function Franchise() {
       setLoading(false);
     }
   };
-
 
   const getYoutubeEmbedUrl = (url) => {
     if (!url) return "";
@@ -141,20 +135,16 @@ function Franchise() {
   };
 
   const safeLogoUrl = (logo) => {
-  if (!logo) return "";
+    if (!logo) return "";
 
-  if (typeof logo === "string") {
-    return getImageUrl(logo);
-  }
+    if (typeof logo === "string") {
+      return getImageUrl(logo);
+    }
 
-  return getImageUrl(
-    logo?.url ||
-    logo?.path ||
-    logo?.image ||
-    logo?.filename ||
-    ""
-  );
-};
+    return getImageUrl(
+      logo?.url || logo?.path || logo?.image || logo?.filename || "",
+    );
+  };
 
   const heroBg = useMemo(() => {
     return getImageUrl(data?.hero?.backgroundImage);
@@ -196,6 +186,7 @@ function Franchise() {
           email: "",
           phone: "",
           city: "",
+          state: "",
           investmentRange: "",
           message: "",
         });
@@ -214,8 +205,8 @@ function Franchise() {
     return (
       <>
         <div className="sticky top-0 z-[100] hidden md:block bg-white shadow-sm">
-  <Navbar />
-</div>
+          <Navbar />
+        </div>
 
         <div className="md:hidden">
           <MobileAppHeader />
@@ -238,18 +229,18 @@ function Franchise() {
 
   const topLogos = (data?.logosSection?.logos || []).slice(
     0,
-    Math.ceil((data?.logosSection?.logos?.length || 0) / 2)
+    Math.ceil((data?.logosSection?.logos?.length || 0) / 2),
   );
 
   const bottomLogos = (data?.logosSection?.logos || []).slice(
-    Math.ceil((data?.logosSection?.logos?.length || 0) / 2)
+    Math.ceil((data?.logosSection?.logos?.length || 0) / 2),
   );
 
   return (
     <>
       <div className="sticky top-0 z-[100] hidden md:block bg-white shadow-sm">
-  <Navbar />
-</div>
+        <Navbar />
+      </div>
 
       <div className="md:hidden">
         <MobileAppHeader />
@@ -268,7 +259,7 @@ function Franchise() {
           }}
         >
           <div className="mx-auto max-w-[1440px] px-4 py-7 sm:px-6 md:py-12 lg:px-10 lg:py-14">
-            <div className="grid items-center gap-6 lg:grid-cols-[1.12fr_0.88fr] xl:gap-14">
+            <div className="grid items-center gap-6 lg:grid-cols-[1.08fr_0.92fr] xl:gap-14">
               <div className="text-white">
                 {data?.hero?.badge && (
                   <div className="inline-flex items-center border-l-4 border-[#facc15] pl-3 text-xs font-medium text-white/90 sm:text-base md:text-lg">
@@ -305,19 +296,27 @@ function Franchise() {
                 )}
               </div>
 
-              <div className={`ml-auto w-full max-w-[520px] rounded-[24px] p-4 shadow-2xl sm:rounded-[28px] sm:p-5 md:bg-white md:p-6 ${cardBg}`}>
-                <h2 className={`text-[22px] font-bold leading-tight sm:text-[26px] md:text-[30px] ${headingText}`}>
+              <div
+                className={`mx-auto lg:ml-auto w-full max-w-[520px] rounded-[24px] p-4 shadow-2xl sm:rounded-[28px] sm:p-5 md:bg-white md:p-6 ${cardBg}`}
+              >
+                <h2
+                  className={`text-[22px] font-bold leading-tight sm:text-[26px] md:text-[30px] ${headingText}`}
+                >
                   {data?.enquirySection?.heading || "Get in touch with us"}
                 </h2>
 
-                <p className={`mt-2 text-sm leading-6 sm:text-base ${mutedText}`}>
+                <p
+                  className={`mt-2 text-sm leading-6 sm:text-base ${mutedText}`}
+                >
                   {data?.enquirySection?.subtitle ||
                     "Share your details and our team will connect with you shortly."}
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-4 space-y-3">
                   <div>
-                    <label className={`mb-1.5 block text-sm font-semibold ${labelText}`}>
+                    <label
+                      className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                    >
                       Name
                     </label>
                     <input
@@ -332,7 +331,9 @@ function Franchise() {
                   </div>
 
                   <div>
-                    <label className={`mb-1.5 block text-sm font-semibold ${labelText}`}>
+                    <label
+                      className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                    >
                       Email
                     </label>
                     <input
@@ -347,7 +348,9 @@ function Franchise() {
                   </div>
 
                   <div>
-                    <label className={`mb-1.5 block text-sm font-semibold ${labelText}`}>
+                    <label
+                      className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                    >
                       Phone
                     </label>
                     <input
@@ -361,22 +364,46 @@ function Franchise() {
                     />
                   </div>
 
-                  <div>
-                    <label className={`mb-1.5 block text-sm font-semibold ${labelText}`}>
-                      City
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      placeholder="Enter your city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      className={inputClass}
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                      >
+                        City
+                      </label>
+
+                      <input
+                        type="text"
+                        name="city"
+                        placeholder="Enter city"
+                        value={formData.city}
+                        onChange={handleChange}
+                        className={inputClass}
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                      >
+                        State
+                      </label>
+
+                      <input
+                        type="text"
+                        name="state"
+                        placeholder="Enter state"
+                        value={formData.state}
+                        onChange={handleChange}
+                        className={inputClass}
+                      />
+                    </div>
                   </div>
 
                   <div>
-                    <label className={`mb-1.5 block text-sm font-semibold ${labelText}`}>
+                    <label
+                      className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                    >
                       Investment Range
                     </label>
                     <select
@@ -395,7 +422,9 @@ function Franchise() {
                   </div>
 
                   <div>
-                    <label className={`mb-1.5 block text-sm font-semibold ${labelText}`}>
+                    <label
+                      className={`mb-1.5 block text-sm font-semibold ${labelText}`}
+                    >
                       Message
                     </label>
                     <textarea
@@ -428,7 +457,9 @@ function Franchise() {
               <p className="text-sm font-semibold text-[#13b7dc] sm:text-lg md:text-xl md:text-[#0b5c8e]">
                 {data?.whyFranchise?.heading}
               </p>
-              <h2 className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}>
+              <h2
+                className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}
+              >
                 {data?.whyFranchise?.title}
               </h2>
             </div>
@@ -451,11 +482,15 @@ function Franchise() {
                     )}
                   </div>
 
-                  <h3 className={`mt-4 text-[21px] font-bold leading-tight sm:text-[28px] md:text-[32px] ${headingText}`}>
+                  <h3
+                    className={`mt-4 text-[21px] font-bold leading-tight sm:text-[28px] md:text-[32px] ${headingText}`}
+                  >
                     {item.title}
                   </h3>
 
-                  <p className={`mt-2 text-sm leading-6 sm:text-[16px] md:mt-4 md:text-[17px] md:leading-8 ${bodyText}`}>
+                  <p
+                    className={`mt-2 text-sm leading-6 sm:text-[16px] md:mt-4 md:text-[17px] md:leading-8 ${bodyText}`}
+                  >
                     {item.description}
                   </p>
                 </div>
@@ -464,6 +499,25 @@ function Franchise() {
           </div>
         </section>
 
+      {/* FRANCHISE BANNER */}
+{data?.franchiseBannerSection?.image && (
+  <section className={`${sectionBg} pb-6 pt-2 md:pb-10`}>
+    <div className="mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
+
+      <div className="overflow-hidden rounded-[28px] shadow-2xl border border-slate-200 bg-white">
+
+        <img
+  src={getImageUrl(data.franchiseBannerSection?.image)}
+  alt="Franchise Banner"
+  className="h-full w-full object-contain"
+/>
+
+      </div>
+
+    </div>
+  </section>
+)}
+
         {/* BRAND STATS / VISUAL */}
         <section className={`${sectionAltBg} py-10 sm:py-12 md:py-16 lg:py-20`}>
           <div className="mx-auto max-w-[1380px] px-4 sm:px-6 lg:px-10">
@@ -471,7 +525,9 @@ function Franchise() {
               <p className="text-sm font-semibold text-[#13b7dc] sm:text-lg md:text-xl md:text-[#0b5c8e]">
                 {data?.brandStats?.heading}
               </p>
-              <h2 className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}>
+              <h2
+                className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}
+              >
                 {data?.brandStats?.title}
               </h2>
             </div>
@@ -485,12 +541,18 @@ function Franchise() {
                     className="h-[230px] w-full rounded-[22px] object-contain sm:h-[320px] md:h-[420px] lg:h-[520px] xl:h-[550px]"
                   />
                 ) : (
-                  <div className={`flex h-[230px] flex-col items-center justify-center rounded-[22px] px-6 text-center sm:h-[320px] md:h-[420px] lg:h-[460px] ${cardBg}`}>
+                  <div
+                    className={`flex h-[230px] flex-col items-center justify-center rounded-[22px] px-6 text-center sm:h-[320px] md:h-[420px] lg:h-[460px] ${cardBg}`}
+                  >
                     <div className="text-5xl sm:text-7xl">🗺️</div>
-                    <h3 className={`mt-4 text-xl font-bold sm:text-2xl md:text-3xl ${headingText}`}>
+                    <h3
+                      className={`mt-4 text-xl font-bold sm:text-2xl md:text-3xl ${headingText}`}
+                    >
                       Brand Growth Visual
                     </h3>
-                    <p className={`mt-3 max-w-md text-sm leading-6 sm:text-base sm:leading-7 ${mutedText}`}>
+                    <p
+                      className={`mt-3 max-w-md text-sm leading-6 sm:text-base sm:leading-7 ${mutedText}`}
+                    >
                       Yaha admin se relevant image aayegi.
                     </p>
                   </div>
@@ -517,11 +579,15 @@ function Franchise() {
                       </div>
 
                       <div className="min-w-0 flex-1 md:block">
-                        <h3 className={`text-[18px] font-bold leading-snug sm:text-[20px] md:text-2xl ${headingText}`}>
+                        <h3
+                          className={`text-[18px] font-bold leading-snug sm:text-[20px] md:text-2xl ${headingText}`}
+                        >
                           {item.title}
                         </h3>
 
-                        <p className={`mt-1 text-sm leading-6 sm:text-[16px] sm:leading-7 ${bodyText}`}>
+                        <p
+                          className={`mt-1 text-sm leading-6 sm:text-[16px] sm:leading-7 ${bodyText}`}
+                        >
                           {item.description}
                         </p>
                       </div>
@@ -594,12 +660,16 @@ function Franchise() {
                 )}
               </div>
 
-              <div className={`rounded-[22px] p-5 md:rounded-none md:bg-transparent md:p-0 ${cardBg}`}>
+              <div
+                className={`rounded-[22px] p-5 md:rounded-none md:bg-transparent md:p-0 ${cardBg}`}
+              >
                 <p className="text-sm font-semibold text-[#13b7dc] sm:text-lg md:text-xl md:text-[#0b5c8e]">
                   {data?.founder?.heading}
                 </p>
 
-                <h2 className={`mt-2 text-[28px] font-bold leading-tight sm:text-[36px] md:mt-4 md:text-5xl ${headingText}`}>
+                <h2
+                  className={`mt-2 text-[28px] font-bold leading-tight sm:text-[36px] md:mt-4 md:text-5xl ${headingText}`}
+                >
                   {data?.founder?.name}
                 </h2>
 
@@ -607,7 +677,9 @@ function Franchise() {
                   {data?.founder?.designation}
                 </p>
 
-                <div className={`mt-4 whitespace-pre-line text-sm leading-7 sm:text-[16px] sm:leading-8 md:mt-8 md:text-[17px] md:leading-9 ${bodyText}`}>
+                <div
+                  className={`mt-4 whitespace-pre-line text-sm leading-7 sm:text-[16px] sm:leading-8 md:mt-8 md:text-[17px] md:leading-9 ${bodyText}`}
+                >
                   {data?.founder?.message}
                 </div>
               </div>
@@ -617,13 +689,17 @@ function Franchise() {
 
         {/* VIDEO */}
         {(data?.videoSection?.youtubeUrl || data?.videoSection?.thumbnail) && (
-          <section className={`${sectionAltBg} py-10 sm:py-12 md:py-16 lg:py-20`}>
+          <section
+            className={`${sectionAltBg} py-10 sm:py-12 md:py-16 lg:py-20`}
+          >
             <div className="mx-auto max-w-[1200px] px-4 text-center sm:px-6 lg:px-10">
               <p className="text-sm font-semibold text-[#13b7dc] sm:text-lg md:text-xl md:text-[#0b5c8e]">
                 {data?.videoSection?.heading}
               </p>
 
-              <h2 className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}>
+              <h2
+                className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}
+              >
                 {data?.videoSection?.title}
               </h2>
 
@@ -656,7 +732,9 @@ function Franchise() {
                 {data?.idealPartner?.heading}
               </p>
 
-              <h2 className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}>
+              <h2
+                className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}
+              >
                 {data?.idealPartner?.title}
               </h2>
             </div>
@@ -679,11 +757,15 @@ function Franchise() {
                     )}
                   </div>
 
-                  <h3 className={`mt-4 text-[21px] font-bold leading-tight sm:text-[28px] md:text-[32px] ${headingText}`}>
+                  <h3
+                    className={`mt-4 text-[21px] font-bold leading-tight sm:text-[28px] md:text-[32px] ${headingText}`}
+                  >
                     {item.title}
                   </h3>
 
-                  <p className={`mt-2 text-sm leading-6 sm:text-[16px] md:mt-4 md:text-[17px] md:leading-8 ${bodyText}`}>
+                  <p
+                    className={`mt-2 text-sm leading-6 sm:text-[16px] md:mt-4 md:text-[17px] md:leading-8 ${bodyText}`}
+                  >
                     {item.description}
                   </p>
                 </div>
@@ -705,26 +787,26 @@ function Franchise() {
               </h2>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:mt-12 md:grid-cols-2 md:gap-6 xl:mt-14">
+            <div className="mt-8 grid gap-4 sm:mt-12 lg:grid-cols-2 md:gap-6 xl:mt-14">
               {(data?.deliveryModes?.items || []).map((item, index) => (
                 <div
                   key={index}
                   className="rounded-[22px] border border-white/10 bg-white/[0.06] p-5 text-white shadow-lg sm:p-6 md:rounded-md md:bg-white md:p-8 md:text-[#07111a]"
                 >
-                  <div className="grid gap-5 sm:grid-cols-[140px_1fr] sm:gap-6 md:grid-cols-[180px_1fr]">
-                    <div className="flex h-[150px] items-center justify-center overflow-hidden rounded-xl bg-white/10 text-5xl sm:h-[140px] sm:text-6xl md:h-[160px] md:rounded-md md:bg-[#eef3f8]">
+                  <div className="flex flex-col gap-5 lg:grid lg:grid-cols-[180px_1fr] lg:gap-6">
+                    <div className="flex h-[180px] w-full items-center justify-center overflow-hidden rounded-xl bg-white/10 text-5xl sm:h-[140px] sm:text-6xl md:h-[160px] md:rounded-md md:bg-[#eef3f8]">
                       {item.image ? (
                         <img
                           src={getImageUrl(item.image)}
                           alt={item.title}
-                          className="h-full w-full object-cover"
+                          className="h-full w-full object-cover md:object-cover"
                         />
                       ) : (
                         <span>{deliveryIcons[index] || "💻"}</span>
                       )}
                     </div>
 
-                    <div>
+                    <div className="text-center lg:text-left">
                       <h3 className="text-[22px] font-bold leading-tight text-white sm:text-[26px] md:text-3xl md:text-[#072b57]">
                         {item.title}
                       </h3>
@@ -748,7 +830,9 @@ function Franchise() {
                 {data?.supportSystem?.heading}
               </p>
 
-              <h2 className={`mt-2 text-[26px] font-bold leading-[1.14] sm:text-[34px] md:mt-3 md:text-5xl ${headingText}`}>
+              <h2
+                className={`mt-2 text-[26px] font-bold leading-[1.14] sm:text-[34px] md:mt-3 md:text-5xl ${headingText}`}
+              >
                 {data?.supportSystem?.title}
               </h2>
             </div>
@@ -773,11 +857,15 @@ function Franchise() {
                     </div>
 
                     <div className="min-w-0 flex-1 md:block">
-                      <h3 className={`text-[18px] font-bold leading-snug sm:text-[20px] md:text-2xl ${headingText}`}>
+                      <h3
+                        className={`text-[18px] font-bold leading-snug sm:text-[20px] md:text-2xl ${headingText}`}
+                      >
                         {item.title}
                       </h3>
 
-                      <p className={`mt-2 text-sm leading-6 sm:text-[15px] sm:leading-7 md:text-[16px] ${bodyText}`}>
+                      <p
+                        className={`mt-2 text-sm leading-6 sm:text-[15px] sm:leading-7 md:text-[16px] ${bodyText}`}
+                      >
                         {item.description}
                       </p>
                     </div>
@@ -796,7 +884,9 @@ function Franchise() {
                 {data?.processSection?.heading}
               </p>
 
-              <h2 className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}>
+              <h2
+                className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}
+              >
                 {data?.processSection?.title}
               </h2>
             </div>
@@ -817,11 +907,15 @@ function Franchise() {
                     </div>
 
                     <div className="min-w-0 flex-1 md:block">
-                      <h3 className={`text-[17px] font-bold leading-snug sm:text-[20px] md:mt-8 md:text-2xl ${headingText}`}>
+                      <h3
+                        className={`text-[17px] font-bold leading-snug sm:text-[20px] md:mt-8 md:text-2xl ${headingText}`}
+                      >
                         {item.title}
                       </h3>
 
-                      <p className={`mt-2 text-sm leading-6 sm:text-[15px] sm:leading-7 md:mt-4 md:text-[16px] md:leading-8 ${bodyText}`}>
+                      <p
+                        className={`mt-2 text-sm leading-6 sm:text-[15px] sm:leading-7 md:mt-4 md:text-[16px] md:leading-8 ${bodyText}`}
+                      >
                         {item.description}
                       </p>
                     </div>
@@ -845,7 +939,9 @@ function Franchise() {
                   {data?.logosSection?.heading}
                 </p>
 
-                <h2 className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}>
+                <h2
+                  className={`mt-2.5 text-[28px] font-bold leading-[1.15] sm:text-[36px] md:mt-3 md:text-5xl ${headingText}`}
+                >
                   {data?.logosSection?.title}
                 </h2>
               </div>

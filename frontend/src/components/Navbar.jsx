@@ -16,6 +16,7 @@ import {
   Sun,
   Crown,
   Moon,
+  Video,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import {
@@ -27,6 +28,7 @@ import logo from "../assets/multiclout-logo.png";
 
 const desktopNavLinks = [
   { label: "Watch Videos", path: "/watch-videos" },
+  { label: "Creator Videos", path: "/creator-videos" },
   { label: "Business Plan", path: "/business-plan" },
   { label: "Tutorials", path: "/tutorials" },
   { label: "Franchise", path: "/franchise" },
@@ -35,6 +37,7 @@ const desktopNavLinks = [
 
 const mobileNavLinks = [
   { label: "Home", path: "/", icon: Home },
+  { label: "Creator Videos", path: "/creator-videos", icon: Video },
   { label: "Business Plan", path: "/business-plan", icon: BriefcaseBusiness },
   { label: "Tutorials", path: "/tutorials", icon: GraduationCap },
   { label: "Franchise", path: "/franchise", icon: Handshake },
@@ -106,12 +109,12 @@ function Navbar() {
 
   return (
     <header
-  className="sticky top-0 z-50 border-b shadow-sm backdrop-blur-xl"
-  style={{
-    background: "var(--mc-nav-bg)",
-    borderColor: "var(--mc-border)",
-  }}
->
+      className="sticky top-0 z-50 border-b shadow-sm backdrop-blur-xl"
+      style={{
+        background: "var(--mc-nav-bg)",
+        borderColor: "var(--mc-border)",
+      }}
+    >
       <div className="mx-auto flex min-h-[74px] w-full max-w-[1440px] items-center justify-between gap-3 px-4 sm:min-h-[80px] sm:px-5 md:px-6 lg:px-8 xl:px-10">
         <Link to="/" className="flex shrink-0 items-center" onClick={closeMenu}>
           <img
@@ -146,11 +149,11 @@ function Navbar() {
 
         <div className="hidden shrink-0 items-center gap-2 md:flex lg:gap-3">
           <a
-  href="#"
-  className="hidden rounded-full border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 transition-all duration-300 hover:border-[#167a7a] hover:bg-[#167a7a] hover:text-white lg:inline-flex xl:px-6 xl:py-3"
->
-  Download App
-</a>
+            href="#"
+           className="hidden rounded-full border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-semibold !text-[#0f172a] transition-all duration-300 hover:border-[#167a7a] hover:bg-[#167a7a] hover:!text-white lg:inline-flex xl:px-6 xl:py-3"
+          >
+            Download App
+          </a>
 
           <Link
             to="/cart"
@@ -169,10 +172,9 @@ function Navbar() {
             <>
               <Link
                 to="/account"
-                className="inline-flex items-center gap-2 rounded-full border border-gray-300 px-4 py-2.5 text-sm font-semibold !text-gray-700 transition-all duration-300 hover:border-[#167a7a] hover:bg-[#167a7a] hover:!text-white xl:px-5 xl:py-3"
+                className="inline-flex h-[46px] w-[46px] items-center justify-center rounded-full border border-gray-300 bg-white !text-[#0f172a] transition-all duration-300 hover:border-[#167a7a] hover:bg-[#167a7a] hover:!text-white"
               >
-                <UserCircle2 size={18} />
-                My Account
+                <UserCircle2 size={20} />
               </Link>
 
               <button
@@ -257,7 +259,9 @@ function Navbar() {
 
       <div
         className={`overflow-hidden border-t transition-all duration-300 md:hidden ${
-          mobileMenuOpen ? "max-h-[calc(100vh-74px)] opacity-100 overflow-y-auto" : "max-h-0 opacity-0"
+          mobileMenuOpen
+            ? "max-h-[calc(100vh-74px)] opacity-100 overflow-y-auto"
+            : "max-h-0 opacity-0"
         }`}
         style={{
           background: "var(--mc-bg-soft)",

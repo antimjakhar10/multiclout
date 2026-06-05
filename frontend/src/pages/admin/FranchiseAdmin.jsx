@@ -21,7 +21,8 @@ const createStatItem = () => ({
 function FranchiseAdmin() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [uploading, setUploading] = useState(false);
+  
   const token = localStorage.getItem("adminToken");
 
   const [form, setForm] = useState({
@@ -50,6 +51,13 @@ function FranchiseAdmin() {
       title: "",
       image: "",
       stats: [],
+    },
+
+    franchiseBannerSection: {
+      heading: "",
+      title: "",
+      subtitle: "",
+      image: "",
     },
 
     factsSection: {
@@ -143,7 +151,7 @@ function FranchiseAdmin() {
     index,
     field,
     value,
-    arrayKey = "items"
+    arrayKey = "items",
   ) => {
     setForm((prev) => {
       const updated = [...(prev[section]?.[arrayKey] || [])];
@@ -177,7 +185,9 @@ function FranchiseAdmin() {
       ...prev,
       [section]: {
         ...prev[section],
-        [arrayKey]: (prev[section]?.[arrayKey] || []).filter((_, i) => i !== index),
+        [arrayKey]: (prev[section]?.[arrayKey] || []).filter(
+          (_, i) => i !== index,
+        ),
       },
     }));
   };
@@ -270,10 +280,14 @@ function FranchiseAdmin() {
 
           <button
             onClick={saveData}
-            disabled={saving}
+            disabled={saving || uploading}
             className="inline-flex min-w-[210px] items-center justify-center rounded-xl bg-gradient-to-r from-[#0b5c8e] via-[#167a7a] to-[#2e8b57] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-95 disabled:opacity-60"
           >
-            {saving ? "Saving..." : "Save Franchise Data"}
+            {uploading
+              ? "Uploading Image..."
+              : saving
+                ? "Saving..."
+                : "Save Franchise Data"}
           </button>
         </div>
       </div>
@@ -289,7 +303,10 @@ function FranchiseAdmin() {
           <ImageUploadField
             label="Background Image"
             value={form.hero?.backgroundImage}
-            onChange={(val) => handleTopLevelChange("hero", "backgroundImage", val)}
+            setUploading={setUploading}
+            onChange={(val) =>
+              handleTopLevelChange("hero", "backgroundImage", val)
+            }
           />
         </div>
 
@@ -311,7 +328,9 @@ function FranchiseAdmin() {
 
         <div className="mt-6">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-[#07111a]">Hero Stats</h3>
+            <h3 className="text-base font-semibold text-[#07111a]">
+              Hero Stats
+            </h3>
             <button
               type="button"
               onClick={() => addArrayItem("hero", createStatItem(), "stats")}
@@ -332,7 +351,13 @@ function FranchiseAdmin() {
                     label="Label"
                     value={item.label}
                     onChange={(val) =>
-                      handleArrayItemChange("hero", index, "label", val, "stats")
+                      handleArrayItemChange(
+                        "hero",
+                        index,
+                        "label",
+                        val,
+                        "stats",
+                      )
                     }
                   />
 
@@ -340,7 +365,13 @@ function FranchiseAdmin() {
                     label="Value"
                     value={item.value}
                     onChange={(val) =>
-                      handleArrayItemChange("hero", index, "value", val, "stats")
+                      handleArrayItemChange(
+                        "hero",
+                        index,
+                        "value",
+                        val,
+                        "stats",
+                      )
                     }
                   />
 
@@ -365,13 +396,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.enquirySection?.heading}
-            onChange={(val) => handleTopLevelChange("enquirySection", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("enquirySection", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.enquirySection?.title}
-            onChange={(val) => handleTopLevelChange("enquirySection", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("enquirySection", "title", val)
+            }
           />
         </div>
 
@@ -379,7 +414,9 @@ function FranchiseAdmin() {
           <Textarea
             label="Subtitle"
             value={form.enquirySection?.subtitle}
-            onChange={(val) => handleTopLevelChange("enquirySection", "subtitle", val)}
+            onChange={(val) =>
+              handleTopLevelChange("enquirySection", "subtitle", val)
+            }
           />
         </div>
       </SectionCard>
@@ -389,13 +426,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.whyFranchise?.heading}
-            onChange={(val) => handleTopLevelChange("whyFranchise", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("whyFranchise", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.whyFranchise?.title}
-            onChange={(val) => handleTopLevelChange("whyFranchise", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("whyFranchise", "title", val)
+            }
           />
         </div>
 
@@ -423,6 +464,7 @@ function FranchiseAdmin() {
               <ImageUploadField
                 label="Image"
                 value={item.image}
+                setUploading={setUploading}
                 onChange={(val) =>
                   handleArrayItemChange("whyFranchise", index, "image", val)
                 }
@@ -432,7 +474,12 @@ function FranchiseAdmin() {
                 label="Description"
                 value={item.description}
                 onChange={(val) =>
-                  handleArrayItemChange("whyFranchise", index, "description", val)
+                  handleArrayItemChange(
+                    "whyFranchise",
+                    index,
+                    "description",
+                    val,
+                  )
                 }
               />
 
@@ -455,7 +502,9 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.brandStats?.heading}
-            onChange={(val) => handleTopLevelChange("brandStats", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("brandStats", "heading", val)
+            }
           />
 
           <Input
@@ -469,6 +518,7 @@ function FranchiseAdmin() {
           <ImageUploadField
             label="Main Image"
             value={form.brandStats?.image}
+            setUploading={setUploading}
             onChange={(val) => handleTopLevelChange("brandStats", "image", val)}
           />
         </div>
@@ -476,7 +526,9 @@ function FranchiseAdmin() {
         <div className="mt-6 flex justify-end">
           <button
             type="button"
-            onClick={() => addArrayItem("brandStats", createCardItem(), "stats")}
+            onClick={() =>
+              addArrayItem("brandStats", createCardItem(), "stats")
+            }
             className="inline-flex items-center justify-center rounded-xl bg-[#07111a] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#0b5c8e]"
           >
             Add Stat Card
@@ -490,15 +542,28 @@ function FranchiseAdmin() {
                 label="Title"
                 value={item.title}
                 onChange={(val) =>
-                  handleArrayItemChange("brandStats", index, "title", val, "stats")
+                  handleArrayItemChange(
+                    "brandStats",
+                    index,
+                    "title",
+                    val,
+                    "stats",
+                  )
                 }
               />
 
               <ImageUploadField
                 label="Image"
                 value={item.image}
+                setUploading={setUploading}
                 onChange={(val) =>
-                  handleArrayItemChange("brandStats", index, "image", val, "stats")
+                  handleArrayItemChange(
+                    "brandStats",
+                    index,
+                    "image",
+                    val,
+                    "stats",
+                  )
                 }
               />
 
@@ -511,7 +576,7 @@ function FranchiseAdmin() {
                     index,
                     "description",
                     val,
-                    "stats"
+                    "stats",
                   )
                 }
               />
@@ -530,12 +595,55 @@ function FranchiseAdmin() {
         </div>
       </SectionCard>
 
+      <SectionCard title="Franchise Banner Section">
+        <div className="grid gap-4 xl:grid-cols-2">
+          <Input
+            label="Heading"
+            value={form.franchiseBannerSection?.heading}
+            onChange={(val) =>
+              handleTopLevelChange("franchiseBannerSection", "heading", val)
+            }
+          />
+
+          <Input
+            label="Title"
+            value={form.franchiseBannerSection?.title}
+            onChange={(val) =>
+              handleTopLevelChange("franchiseBannerSection", "title", val)
+            }
+          />
+        </div>
+
+        <div className="mt-4">
+          <Textarea
+            label="Subtitle"
+            value={form.franchiseBannerSection?.subtitle}
+            onChange={(val) =>
+              handleTopLevelChange("franchiseBannerSection", "subtitle", val)
+            }
+          />
+        </div>
+
+        <div className="mt-4">
+          <ImageUploadField
+            label="Banner Image"
+            value={form.franchiseBannerSection?.image}
+            onChange={(val) =>
+              handleTopLevelChange("franchiseBannerSection", "image", val)
+            }
+            setUploading={setUploading}
+          />
+        </div>
+      </SectionCard>
+
       <SectionCard title="Facts Section">
         <div className="grid gap-4 xl:grid-cols-2">
           <Input
             label="Heading"
             value={form.factsSection?.heading}
-            onChange={(val) => handleTopLevelChange("factsSection", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("factsSection", "heading", val)
+            }
           />
 
           <ImageUploadField
@@ -544,15 +652,20 @@ function FranchiseAdmin() {
             onChange={(val) =>
               handleTopLevelChange("factsSection", "backgroundImage", val)
             }
+            setUploading={setUploading}
           />
         </div>
 
         <div className="mt-6">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <h3 className="text-base font-semibold text-[#07111a]">Facts Stats</h3>
+            <h3 className="text-base font-semibold text-[#07111a]">
+              Facts Stats
+            </h3>
             <button
               type="button"
-              onClick={() => addArrayItem("factsSection", createStatItem(), "stats")}
+              onClick={() =>
+                addArrayItem("factsSection", createStatItem(), "stats")
+              }
               className="inline-flex items-center justify-center rounded-xl bg-[#07111a] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-[#0b5c8e]"
             >
               Add Stat
@@ -570,7 +683,13 @@ function FranchiseAdmin() {
                     label="Label"
                     value={item.label}
                     onChange={(val) =>
-                      handleArrayItemChange("factsSection", index, "label", val, "stats")
+                      handleArrayItemChange(
+                        "factsSection",
+                        index,
+                        "label",
+                        val,
+                        "stats",
+                      )
                     }
                   />
 
@@ -578,14 +697,22 @@ function FranchiseAdmin() {
                     label="Value"
                     value={item.value}
                     onChange={(val) =>
-                      handleArrayItemChange("factsSection", index, "value", val, "stats")
+                      handleArrayItemChange(
+                        "factsSection",
+                        index,
+                        "value",
+                        val,
+                        "stats",
+                      )
                     }
                   />
 
                   <div className="flex items-end">
                     <button
                       type="button"
-                      onClick={() => removeArrayItem("factsSection", index, "stats")}
+                      onClick={() =>
+                        removeArrayItem("factsSection", index, "stats")
+                      }
                       className="inline-flex h-11 items-center justify-center rounded-xl bg-red-500 px-4 text-sm font-medium text-white transition hover:bg-red-600"
                     >
                       Remove
@@ -615,7 +742,9 @@ function FranchiseAdmin() {
           <Input
             label="Designation"
             value={form.founder?.designation}
-            onChange={(val) => handleTopLevelChange("founder", "designation", val)}
+            onChange={(val) =>
+              handleTopLevelChange("founder", "designation", val)
+            }
           />
         </div>
 
@@ -624,6 +753,7 @@ function FranchiseAdmin() {
             label="Founder Image"
             value={form.founder?.image}
             onChange={(val) => handleTopLevelChange("founder", "image", val)}
+            setUploading={setUploading}
           />
         </div>
 
@@ -642,13 +772,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.idealPartner?.heading}
-            onChange={(val) => handleTopLevelChange("idealPartner", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("idealPartner", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.idealPartner?.title}
-            onChange={(val) => handleTopLevelChange("idealPartner", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("idealPartner", "title", val)
+            }
           />
         </div>
 
@@ -679,13 +813,19 @@ function FranchiseAdmin() {
                 onChange={(val) =>
                   handleArrayItemChange("idealPartner", index, "image", val)
                 }
+                setUploading={setUploading}
               />
 
               <Textarea
                 label="Description"
                 value={item.description}
                 onChange={(val) =>
-                  handleArrayItemChange("idealPartner", index, "description", val)
+                  handleArrayItemChange(
+                    "idealPartner",
+                    index,
+                    "description",
+                    val,
+                  )
                 }
               />
 
@@ -708,13 +848,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.deliveryModes?.heading}
-            onChange={(val) => handleTopLevelChange("deliveryModes", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("deliveryModes", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.deliveryModes?.title}
-            onChange={(val) => handleTopLevelChange("deliveryModes", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("deliveryModes", "title", val)
+            }
           />
         </div>
 
@@ -745,13 +889,19 @@ function FranchiseAdmin() {
                 onChange={(val) =>
                   handleArrayItemChange("deliveryModes", index, "image", val)
                 }
+                setUploading={setUploading}
               />
 
               <Textarea
                 label="Description"
                 value={item.description}
                 onChange={(val) =>
-                  handleArrayItemChange("deliveryModes", index, "description", val)
+                  handleArrayItemChange(
+                    "deliveryModes",
+                    index,
+                    "description",
+                    val,
+                  )
                 }
               />
 
@@ -774,13 +924,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.supportSystem?.heading}
-            onChange={(val) => handleTopLevelChange("supportSystem", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("supportSystem", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.supportSystem?.title}
-            onChange={(val) => handleTopLevelChange("supportSystem", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("supportSystem", "title", val)
+            }
           />
         </div>
 
@@ -811,13 +965,19 @@ function FranchiseAdmin() {
                 onChange={(val) =>
                   handleArrayItemChange("supportSystem", index, "image", val)
                 }
+                setUploading={setUploading}
               />
 
               <Textarea
                 label="Description"
                 value={item.description}
                 onChange={(val) =>
-                  handleArrayItemChange("supportSystem", index, "description", val)
+                  handleArrayItemChange(
+                    "supportSystem",
+                    index,
+                    "description",
+                    val,
+                  )
                 }
               />
 
@@ -840,13 +1000,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.processSection?.heading}
-            onChange={(val) => handleTopLevelChange("processSection", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("processSection", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.processSection?.title}
-            onChange={(val) => handleTopLevelChange("processSection", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("processSection", "title", val)
+            }
           />
         </div>
 
@@ -885,7 +1049,12 @@ function FranchiseAdmin() {
                 label="Description"
                 value={item.description}
                 onChange={(val) =>
-                  handleArrayItemChange("processSection", index, "description", val)
+                  handleArrayItemChange(
+                    "processSection",
+                    index,
+                    "description",
+                    val,
+                  )
                 }
               />
 
@@ -908,19 +1077,25 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.videoSection?.heading}
-            onChange={(val) => handleTopLevelChange("videoSection", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("videoSection", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.videoSection?.title}
-            onChange={(val) => handleTopLevelChange("videoSection", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("videoSection", "title", val)
+            }
           />
 
           <Input
             label="YouTube URL"
             value={form.videoSection?.youtubeUrl}
-            onChange={(val) => handleTopLevelChange("videoSection", "youtubeUrl", val)}
+            onChange={(val) =>
+              handleTopLevelChange("videoSection", "youtubeUrl", val)
+            }
           />
         </div>
 
@@ -928,7 +1103,10 @@ function FranchiseAdmin() {
           <ImageUploadField
             label="Thumbnail"
             value={form.videoSection?.thumbnail}
-            onChange={(val) => handleTopLevelChange("videoSection", "thumbnail", val)}
+            onChange={(val) =>
+              handleTopLevelChange("videoSection", "thumbnail", val)
+            }
+            setUploading={setUploading}
           />
         </div>
       </SectionCard>
@@ -938,13 +1116,17 @@ function FranchiseAdmin() {
           <Input
             label="Heading"
             value={form.logosSection?.heading}
-            onChange={(val) => handleTopLevelChange("logosSection", "heading", val)}
+            onChange={(val) =>
+              handleTopLevelChange("logosSection", "heading", val)
+            }
           />
 
           <Input
             label="Title"
             value={form.logosSection?.title}
-            onChange={(val) => handleTopLevelChange("logosSection", "title", val)}
+            onChange={(val) =>
+              handleTopLevelChange("logosSection", "title", val)
+            }
           />
         </div>
 
@@ -965,6 +1147,7 @@ function FranchiseAdmin() {
                 label={`Logo ${index + 1}`}
                 value={logo}
                 onChange={(val) => handleLogoChange(index, val)}
+                setUploading={setUploading}
               />
 
               <div>
@@ -1014,7 +1197,9 @@ function CardBlock({ title, children }) {
 function Input({ label, value, onChange, placeholder = "" }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-[#07111a]">{label}</label>
+      <label className="block text-sm font-medium text-[#07111a]">
+        {label}
+      </label>
       <input
         type="text"
         value={value || ""}
@@ -1029,7 +1214,9 @@ function Input({ label, value, onChange, placeholder = "" }) {
 function Textarea({ label, value, onChange, rows = 3, placeholder = "" }) {
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-[#07111a]">{label}</label>
+      <label className="block text-sm font-medium text-[#07111a]">
+        {label}
+      </label>
       <textarea
         rows={rows}
         value={value || ""}
@@ -1045,55 +1232,86 @@ function ImageUploadField({
   label,
   value,
   onChange,
+  setUploading,
   placeholder = "/uploads/example.jpg",
 }) {
-  const [uploading, setUploading] = useState(false);
+  const [localUploading, setLocalUploading] = useState(false);
 
-  const previewSrc = value
-  ? value.startsWith("http")
-    ? value
-    : value.startsWith("/uploads")
-    ? `${API_HOST}${value}`
-    : `${API_HOST}/${value}`
-  : "";
+  const previewSrc = (() => {
+    if (!value) return "";
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
+    // full url
+    if (value.startsWith("http")) {
+      return value;
+    }
+
+    // uploads folder
+    if (value.startsWith("/uploads")) {
+      return `${API_HOST}${value}`;
+    }
+
+    // normal path
+    return `${API_HOST}/${value.replace(/^\/+/, "")}`;
+  })();
+
+ const handleFileUpload = async (e) => {
+  try {
+    setLocalUploading(true);
+
+if (setUploading) {
+  setUploading(true);
+}
+
+    const file = e.target.files[0];
+
     if (!file) return;
 
-    try {
-      setUploading(true);
+    const formData = new FormData();
+    formData.append("image", file);
 
-      const formData = new FormData();
-      formData.append("image", file);
+    const token = localStorage.getItem("adminToken");
 
-      const res = await fetch(`${API_HOST}/upload`, {
-        method: "POST",
-        body: formData,
-      });
+    const res = await fetch(`${API}/upload`, {
+  method: "POST",
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
+  body: formData,
+});
 
-      const result = await res.json();
+    const contentType = res.headers.get("content-type");
 
-      if (!res.ok) {
-        throw new Error(result.message || "Upload failed");
-      }
-
-      if (result.success && result.image) {
-        onChange(result.image);
-      } else {
-        throw new Error(result.message || "Invalid upload response");
-      }
-    } catch (error) {
-      console.error("Upload failed:", error);
-      alert(error.message || "Image upload failed");
-    } finally {
-      setUploading(false);
+    if (!contentType || !contentType.includes("application/json")) {
+      const text = await res.text();
+      console.error("Non JSON Response:", text);
+      alert("Server returned invalid response");
+      return;
     }
-  };
+
+    const result = await res.json();
+
+    if (result.success) {
+      onChange(result.image);
+    } else {
+      alert(result.message || "Upload failed");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Image upload failed");
+  } finally {
+  setLocalUploading(false);
+
+  if (setUploading) {
+    setUploading(false);
+  }
+}
+};
 
   return (
     <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-[#07111a]">{label}</label>
+      <label className="block text-sm font-medium text-[#07111a]">
+        {label}
+      </label>
 
       <div className="rounded-2xl border border-slate-300 bg-white p-3">
         <div className="grid gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -1121,7 +1339,7 @@ function ImageUploadField({
             />
 
             <label className="inline-flex h-11 cursor-pointer items-center justify-center rounded-xl bg-[#07111a] px-4 text-sm font-medium text-white transition hover:bg-[#0b5c8e] md:w-fit">
-              {uploading ? "Uploading..." : "Choose Image"}
+              {localUploading ? "Uploading..." : "Choose Image"}
               <input
                 type="file"
                 accept="image/*"

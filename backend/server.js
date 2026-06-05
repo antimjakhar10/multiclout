@@ -32,6 +32,8 @@ const app = express();
 
 connectDB();
 
+console.log("!!! VIMEO TOKEN CHECK:", process.env.VIMEO_ACCESS_TOKEN ? `Loaded (${process.env.VIMEO_ACCESS_TOKEN.substring(0, 4)}...)` : "NOT LOADED");
+
 const uploadsPath = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsPath)) {
   fs.mkdirSync(uploadsPath, { recursive: true });
@@ -61,8 +63,8 @@ app.use(
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -122,6 +124,9 @@ app.get("/api", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+// Increase timeout for large video uploads (10 minutes)
+server.timeout = 600000;

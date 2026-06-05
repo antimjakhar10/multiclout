@@ -24,6 +24,7 @@ import RecommendedVideoCard from "../components/videos/RecommendedVideoCard";
 import MobileBottomNav from "../components/videos/MobileBottomNav";
 import useIsMobileView from "../hooks/useIsMobileView";
 import SEO from "../components/SEO";
+import VideoRowSection from "../components/videos/VideoRowSection";
 
 const DESKTOP_BG =
   "radial-gradient(circle_at_top,rgba(77,154,151,0.12),transparent_28%),linear-gradient(180deg,#05111d_0%,#000000_35%,#000000_100%)";
@@ -54,14 +55,49 @@ function getYoutubeEmbedUrl(url = "") {
   }
 }
 
+function getVimeoEmbedUrl(url = "") {
+  if (!url) return "";
+
+  try {
+    const parsed = new URL(url);
+
+    // already embed url
+    if (parsed.hostname.includes("player.vimeo.com")) {
+      return `${parsed.origin}${parsed.pathname}?autoplay=1&muted=1&playsinline=1`;
+    }
+
+    // normal vimeo url
+    if (parsed.hostname.includes("vimeo.com")) {
+      const match = parsed.pathname.match(/(\d+)/);
+
+      if (!match) return "";
+
+      const videoId = match[1];
+
+      return `https://player.vimeo.com/video/${videoId}?autoplay=1&muted=1&playsinline=1`;
+    }
+
+    return "";
+  } catch (error) {
+    console.log("Vimeo parse error:", error);
+    return "";
+  }
+}
+
 const resolveVideoSrc = (video) => {
   if (!video) return "";
 
-  if (video.videoFile) {
+  // If it's a Vimeo URL, we don't treat it as a direct video file source
+  if (video.videoFile && !video.videoFile.includes("vimeo.com")) {
     return getVideoUrl(video.videoFile);
   }
 
-  return video.videoUrl || "";
+  // If videoFile is missing or is a Vimeo URL, we might fallback to videoUrl
+  if (video.videoUrl && !video.videoUrl.includes("vimeo.com")) {
+    if (isDirectVideo(video.videoUrl)) return video.videoUrl;
+  }
+
+  return "";
 };
 
 const resolveFallbackVideoSrc = (video) => {
@@ -81,6 +117,7 @@ function VideoDetail() {
   const [loading, setLoading] = useState(true);
   const [video, setVideo] = useState(null);
   const [relatedVideos, setRelatedVideos] = useState([]);
+  const [recommendedCategories, setRecommendedCategories] = useState([]);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
@@ -179,8 +216,11 @@ function VideoDetail() {
       const result = await res.json();
 
       if (result.success) {
+        console.log("VIDEO DETAIL API:", result);
+        console.log("RECOMMENDED CATEGORIES:", result.recommendedCategories);
         setVideo(result.video);
         setRelatedVideos(result.relatedVideos || []);
+        setRecommendedCategories(result.recommendedCategories || []);
         setShowFullDesc(false);
       } else {
         setVideo(null);
@@ -190,6 +230,7 @@ function VideoDetail() {
       console.error("video detail fetch error:", error);
       setVideo(null);
       setRelatedVideos([]);
+      setRecommendedCategories([]);
     } finally {
       setLoading(false);
     }
@@ -274,10 +315,25 @@ function VideoDetail() {
     return isDirectVideo(video.videoUrl) ? video.videoUrl : "";
   }, [video]);
 
-  const youtubeEmbedUrl = useMemo(() => {
-    if (!video?.videoUrl) return "";
-    return !directVideoUrl ? getYoutubeEmbedUrl(video.videoUrl) : "";
-  }, [video, directVideoUrl]);
+  const externalEmbedUrl = useMemo(() => {
+    // Priority 1: Check videoUrl for YouTube/Vimeo
+    if (video?.videoUrl) {
+      if (!isDirectVideo(video.videoUrl)) {
+        const yt = getYoutubeEmbedUrl(video.videoUrl);
+        if (yt) return yt;
+        const vim = getVimeoEmbedUrl(video.videoUrl);
+        if (vim) return vim;
+      }
+    }
+
+    // Priority 2: Check videoFile for Vimeo (new migration case)
+    if (video?.videoFile) {
+      const vim = getVimeoEmbedUrl(video.videoFile);
+      if (vim) return vim;
+    }
+
+    return "";
+  }, [video]);
 
   const shortDescription =
     video?.description?.length > 170
@@ -463,7 +519,7 @@ function VideoDetail() {
             </Link>
           </div>
 
-          <div className="grid gap-6 md:items-start md:justify-center xl:grid-cols-[360px_minmax(0,720px)] xl:gap-14">
+          <div className="grid gap-6 md:items-start xl:grid-cols-[380px_minmax(0,1fr)] xl:gap-10">
             <div className="self-start">
               <div
                 className="relative mx-auto aspect-[9/16] w-full max-w-[390px] overflow-hidden rounded-[22px] border shadow-[0_18px_45px_rgba(0,0,0,0.32)] md:h-[620px] md:aspect-auto md:max-w-none xl:h-[610px]"
@@ -511,12 +567,16 @@ function VideoDetail() {
                         onPlay={handleView}
                         className="h-full w-full bg-black object-cover"
                       />
-                    ) : youtubeEmbedUrl ? (
+                    ) : externalEmbedUrl ? (
                       <iframe
-                        src={youtubeEmbedUrl}
+                        src={externalEmbedUrl}
                         title={video.title}
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        frameBorder="0"
+                        allow="autoplay; fullscreen; picture-in-picture"
                         allowFullScreen
+                        loading="lazy"
+                        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+                        referrerPolicy="strict-origin-when-cross-origin"
                         className="h-full w-full bg-black"
                       />
                     ) : (
@@ -586,12 +646,12 @@ function VideoDetail() {
                             )}
 
                             <button
-  type="button"
-  onClick={() => navigate("/mobile-subscription")}
-  className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-5 text-sm font-semibold text-white"
->
-  View Plans
-</button>
+                              type="button"
+                              onClick={() => navigate("/mobile-subscription")}
+                              className="inline-flex h-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] px-5 text-sm font-semibold text-white"
+                            >
+                              View Plans
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -741,7 +801,35 @@ function VideoDetail() {
               )}
             </div>
           </div>
+
+
         </div>
+
+        <div
+  className="mx-auto max-w-[1280px] px-4 md:px-8"
+>
+  {recommendedCategories.length > 0 && (
+    <div className="mt-14 mb-16 space-y-10">
+      <h2
+        className="text-[20px] font-extrabold uppercase tracking-[0.04em]"
+        style={{
+          color: isMobile ? "var(--mc-text-main)" : "#ffffff",
+        }}
+      >
+        Related Categories
+      </h2>
+
+      {recommendedCategories.map((section) => (
+        <VideoRowSection
+          key={section.slug}
+          title={section.title}
+          slug={section.slug}
+          videos={section.videos.slice(0, 5)}
+        />
+      ))}
+    </div>
+  )}
+</div>
 
         <div className="hidden md:block">
           <Footer />

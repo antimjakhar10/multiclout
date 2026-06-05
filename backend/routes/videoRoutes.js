@@ -19,6 +19,10 @@ const {
   userUploadVideo,
   getMyUploadedVideos,
   updateUserVideoStatus,
+  getCreatorVideos,
+  getUserNotifications,
+  markNotificationsRead,
+  deleteNotification,
 } = require("../controllers/videoController");
 
 const {
@@ -69,8 +73,6 @@ router.post("/:slug/view", incrementVideoView);
 router.post("/:slug/like", incrementVideoLike);
 router.post("/:slug/share", incrementVideoShare);
 
-router.get("/:slug", optionalProtect, getVideoBySlug);
-
 router.post(
   "/admin/add",
   protectAdmin,
@@ -79,6 +81,12 @@ router.post(
     { name: "videoFile", maxCount: 1 },
   ]),
   createVideo,
+);
+
+router.get(
+  "/creator-videos",
+  optionalProtect,
+  getCreatorVideos
 );
 
 router.put(
@@ -91,6 +99,26 @@ router.put(
   updateVideo,
 );
 
+router.get(
+  "/user/notifications",
+  protect,
+  getUserNotifications
+);
+
+router.put(
+  "/user/notifications/read",
+  protect,
+  markNotificationsRead
+);
+
+router.delete(
+  "/user/notifications/:id",
+  protect,
+  deleteNotification
+);
+
 router.delete("/admin/delete/:id", protectAdmin, deleteVideo);
+
+router.get("/:slug", optionalProtect, getVideoBySlug);
 
 module.exports = router;

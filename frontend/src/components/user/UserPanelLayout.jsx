@@ -11,6 +11,7 @@ import {
   X,
   UploadCloud,
   BookOpenCheck,
+  Bell,
 } from "lucide-react";
 import { API } from "../../utils/videoHelpers";
 import logo from "../../assets/multiclout-logo.png";
@@ -31,6 +32,11 @@ const navLinks = [
     label: "Upload Video",
     to: "/account/upload-video",
     icon: UploadCloud,
+  },
+  {
+    label: "Notifications",
+    to: "/account/notifications",
+    icon: Bell,
   },
   {
     label: "Profile",
@@ -59,6 +65,7 @@ function UserPanelLayout() {
   const location = useLocation();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const [user, setUser] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem("user")) || null;
@@ -94,6 +101,59 @@ function UserPanelLayout() {
 
     syncUser();
   }, [location.pathname]);
+
+  const fetchNotificationCount = async () => {
+  try {
+    const token =
+      localStorage.getItem("userToken") ||
+      localStorage.getItem("token");
+
+    if (!token) return;
+
+    const res = await fetch(
+      `${API}/videos/user/notifications`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      const unread = (data.notifications || []).filter(
+        (item) => !item.isNotificationRead
+      );
+
+      setNotificationCount(unread.length);
+    }
+  } catch (error) {
+    console.error("Notification count error:", error);
+  }
+};
+
+ useEffect(() => {
+  fetchNotificationCount();
+}, [location.pathname]);
+
+useEffect(() => {
+  const handleNotificationUpdate = () => {
+    fetchNotificationCount();
+  };
+
+  window.addEventListener(
+    "notificationsUpdated",
+    handleNotificationUpdate
+  );
+
+  return () => {
+    window.removeEventListener(
+      "notificationsUpdated",
+      handleNotificationUpdate
+    );
+  };
+}, []);
 
   const userInitial = useMemo(() => {
     return user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
@@ -185,7 +245,16 @@ function UserPanelLayout() {
                       <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04]">
                         <Icon size={17} />
                       </span>
-                      {item.label}
+                      <div className="flex items-center justify-between w-full">
+                        <span>{item.label}</span>
+
+                        {item.label === "Notifications" &&
+                          notificationCount > 0 && (
+                            <span className="min-w-[22px] h-[22px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[11px] font-bold">
+                              {notificationCount}
+                            </span>
+                          )}
+                      </div>
                     </NavLink>
                   );
                 })}
