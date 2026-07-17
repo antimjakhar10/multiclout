@@ -27,13 +27,19 @@ function Footer() {
               business knowledge in one clean platform.
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-col sm:flex-row gap-3">
               <a
-                href="#"
-                className="inline-flex min-w-[168px] items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white transition hover:border-white/20 hover:bg-white/10"
+                href="https://multiclout.com/business/welcome/registration.html"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-2xl bg-gradient-to-r from-[#0f8c92] via-[#13b8c6] to-[#10c990] px-6 py-3 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(15,140,146,0.28)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_16px_34px_rgba(15,140,146,0.4)]"
               >
-                <FaGooglePlay className="text-base" />
-                Google Play
+                OLD MEMBER REGISTRATION
+              </a>
+
+              <a
+                href="https://multiclout.com/business/user/resource_login.html" 
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-2xl bg-gradient-to-r from-[#0f8c92] via-[#13b8c6] to-[#10c990] px-6 py-3 text-[14px] font-bold text-white shadow-[0_12px_26px_rgba(15,140,146,0.28)] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_16px_34px_rgba(15,140,146,0.4)]"
+              >
+                OLD MEMBER LOGIN
               </a>
             </div>
 
@@ -203,7 +209,7 @@ function Footer() {
                         Address
                       </p>
                       <p className="mt-1 max-w-[420px] text-[15px] leading-7 text-slate-400">
-                       Balliwala Chowk, Dehradun, Uttarakhand
+                        Balliwala Chowk, Dehradun, Uttarakhand
                       </p>
                     </div>
                   </div>
@@ -223,10 +229,13 @@ function Footer() {
                   </a>
                 </li>
                 <li>
-  <Link to="/become-a-member" className="transition hover:text-white">
-    Become a Member
-  </Link>
-</li>
+                  <Link
+                    to="/become-a-member"
+                    className="transition hover:text-white"
+                  >
+                    Become a Member
+                  </Link>
+                </li>
                 <li>
                   <Link
                     to="/terms-and-conditions"
@@ -237,10 +246,26 @@ function Footer() {
                 </li>
                 <li>
                   <Link
+                    to="/franchise-terms-and-conditions"
+                    className="transition hover:text-white"
+                  >
+                    Franchise Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/end-user-license-agreement"
                     className="transition hover:text-white"
                   >
                     End User License Agreement
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="transition hover:text-white"
+                  >
+                    Privacy Policy
                   </Link>
                 </li>
                 <li>

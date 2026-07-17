@@ -205,16 +205,7 @@ function MobileSubscription() {
               })}
             </div>
 
-            <button
-              type="button"
-              onClick={handleBuyPlan}
-              disabled={loading || !selectedPlanData || !acceptedTerms}
-              className="mt-5 h-12 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? "Processing..." : settings?.buyButtonText || "Buy Plan"}
-            </button>
-
-            <div className="mt-5 text-sm text-white/60">
+             <div className="mt-5 text-sm text-white/60">
               <label className="flex items-start gap-2.5">
                 <input
                   type="checkbox"
@@ -239,6 +230,17 @@ function MobileSubscription() {
                 Required to continue
               </div>
             </div>
+
+            <button
+              type="button"
+              onClick={handleBuyPlan}
+              disabled={loading || !selectedPlanData || !acceptedTerms}
+              className="mt-5 h-12 w-full rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? "Processing..." : settings?.buyButtonText || "Buy Plan"}
+            </button>
+
+           
 
             <button
               type="button"

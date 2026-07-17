@@ -5,7 +5,7 @@ import MobileAppHeader from "../components/videos/MobileAppHeader";
 import MobileBottomNav from "../components/videos/MobileBottomNav";
 import logo from "../assets/multiclout-logo.png";
 import Footer from "../components/Footer";
-import { getImageUrl } from "../utils/videoHelpers";
+import { getImageUrl, getFallbackImageUrl } from "../utils/videoHelpers";
 
 const HISTORY_KEY = "multiclout_watch_history";
 
@@ -64,10 +64,7 @@ function HistoryPage() {
           >
             Watch History
           </h1>
-          <p
-            className="mt-2 text-sm"
-            style={{ color: "var(--mc-text-soft)" }}
-          >
+          <p className="mt-2 text-sm" style={{ color: "var(--mc-text-soft)" }}>
             Recently watched videos from your learning journey
           </p>
         </div>
@@ -82,7 +79,7 @@ function HistoryPage() {
                   item?.coverImage ||
                   item?.thumbnailUrl ||
                   item?.thumb ||
-                  ""
+                  "",
               );
 
               return (
@@ -100,7 +97,24 @@ function HistoryPage() {
                       <img
                         src={image}
                         alt={item?.title || "History video"}
+                        loading="eager"
+                        decoding="async"
                         className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const fallback = getFallbackImageUrl(
+                            item?.thumbnail ||
+                              item?.image ||
+                              item?.poster ||
+                              item?.coverImage ||
+                              item?.thumbnailUrl ||
+                              item?.thumb ||
+                              "",
+                          );
+
+                          if (fallback && e.currentTarget.src !== fallback) {
+                            e.currentTarget.src = fallback;
+                          }
+                        }}
                       />
                     ) : (
                       <div

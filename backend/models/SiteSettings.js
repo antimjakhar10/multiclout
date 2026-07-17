@@ -230,6 +230,14 @@ const siteSettingsSchema = new mongoose.Schema(
       },
     },
 
+    franchiseTermsAndConditions: {
+  type: legalPageSchema,
+  default: {
+    title: "Franchise Terms & Conditions",
+    content: "Franchise terms and conditions content goes here.",
+  },
+},
+
     becomeAffiliate: {
       type: legalPageSchema,
       default: {

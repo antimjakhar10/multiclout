@@ -77,8 +77,8 @@ function HeroSection({ mobileWatchScrollTarget = "" }) {
   }, [stats]);
 
   const videoSrc = heroSettings?.heroVideo
-  ? getImageUrl(heroSettings.heroVideo, "/videos/hero.mp4")
-  : "/videos/hero.mp4";
+    ? getImageUrl(heroSettings.heroVideo, "/videos/hero.mp4")
+    : "/videos/hero.mp4";
 
   return (
     <section className="relative overflow-hidden bg-black text-white">
@@ -108,40 +108,46 @@ function HeroSection({ mobileWatchScrollTarget = "" }) {
               </span>
             </div>
 
-            <h1 className="mt-4 text-[30px] font-bold leading-[1.08] sm:text-[38px] md:text-[46px] lg:max-w-[650px] lg:text-[58px] lg:leading-[1.02]">
+            <h1 className="mt-4 text-[25px] leading-[1.18] font-bold sm:text-[28px] md:text-[46px] lg:max-w-[650px] lg:text-[58px] lg:leading-[1.02]">
               {heroSettings?.titleLine1 || "Build Your Future With"}
-              <span className="mt-1.5 block bg-gradient-to-r from-cyan-300 via-sky-200 to-emerald-300 bg-clip-text text-transparent">
+              <span className="mt-2 block bg-gradient-to-r from-cyan-300 via-sky-200 to-emerald-300 bg-clip-text text-transparent">
                 {heroSettings?.titleHighlight || "Smart Business Learning"}
               </span>
             </h1>
 
             <p className="hidden md:block mx-auto mt-3 max-w-2xl text-[14px] leading-6 text-slate-200 sm:text-[15px] sm:leading-7 md:text-[16px] md:leading-7 lg:mx-0 lg:max-w-[620px]">
-  {heroSettings?.description ||
-    "Explore powerful business ideas, practical tutorials, and the right direction to grow with more clarity, confidence, and real support."}
-</p>
+              {heroSettings?.description ||
+                "Explore powerful business ideas, practical tutorials, and the right direction to grow with more clarity, confidence, and real support."}
+            </p>
 
             <div className="mt-5 flex flex-col items-center gap-2.5 sm:flex-row sm:justify-center lg:justify-start">
               <Link
                 to={heroSettings?.primaryButtonLink || "/business-plan"}
                 className="inline-flex h-[44px] items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-emerald-500 px-5 text-[13px] font-semibold text-white shadow-[0_12px_35px_rgba(16,185,129,0.22)] transition duration-300 hover:scale-[1.02] sm:h-[48px] sm:px-6 sm:text-sm"
               >
-                {heroSettings?.primaryButtonText || "Register Now & Start Earning Today"}
+                {heroSettings?.primaryButtonText ||
+                  "Register Now & Start Earning Today"}
                 <FaArrowRight className="text-[10px]" />
               </Link>
 
               <Link
-  to={heroSettings?.secondaryButtonLink || "/watch-videos"}
-  onClick={(e) => {
-    if (mobileWatchScrollTarget && window.innerWidth < 768) {
-      e.preventDefault();
-      const section = document.getElementById(mobileWatchScrollTarget);
-      if (section) {
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  }}
-  className="inline-flex h-[44px] items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 text-[13px] font-semibold text-white backdrop-blur-md transition duration-300 hover:bg-white/15 sm:h-[48px] sm:px-6 sm:text-sm"
->
+                to={heroSettings?.secondaryButtonLink || "/watch-videos"}
+                onClick={(e) => {
+                  if (mobileWatchScrollTarget && window.innerWidth < 768) {
+                    e.preventDefault();
+                    const section = document.getElementById(
+                      mobileWatchScrollTarget,
+                    );
+                    if (section) {
+                      section.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }
+                  }
+                }}
+                className="hidden md:inline-flex h-[44px] items-center justify-center gap-2 rounded-full border border-white/20 bg-white/10 px-5 text-[13px] font-semibold text-white backdrop-blur-md transition duration-300 hover:bg-white/15 sm:h-[48px] sm:px-6 sm:text-sm"
+              >
                 <FaPlay className="text-[10px]" />
                 {heroSettings?.secondaryButtonText || "Watch Videos"}
               </Link>
@@ -149,18 +155,18 @@ function HeroSection({ mobileWatchScrollTarget = "" }) {
           </div>
 
           <div className="relative">
-  <div className="pointer-events-none absolute inset-0 rounded-[32px] bg-gradient-to-br from-cyan-500/10 via-white/5 to-emerald-500/10 blur-2xl" />
+            <div className="pointer-events-none absolute inset-0 rounded-[32px] bg-gradient-to-br from-cyan-500/10 via-white/5 to-emerald-500/10 blur-2xl" />
 
-  <div className="relative z-10">
-    <OtpRegistrationForm
-      mode="hero"
-      compact={true}
-      onHeroVerified={(phone) => {
-        sessionStorage.setItem("verifiedRegisterPhone", phone);
-        navigate("/register");
-      }}
-    />
-  </div>
+            <div className="relative z-10">
+              <OtpRegistrationForm
+                mode="hero"
+                compact={true}
+                onHeroVerified={(phone) => {
+                  sessionStorage.setItem("verifiedRegisterPhone", phone);
+                  navigate("/register");
+                }}
+              />
+            </div>
 
             <div className="mt-4 grid grid-cols-3 gap-3">
               {loadingStats

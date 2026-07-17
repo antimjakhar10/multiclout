@@ -40,9 +40,9 @@ function SiteSettings() {
     },
 
     refundPolicy: {
-  title: "",
-  content: "",
-},
+      title: "",
+      content: "",
+    },
 
     privacyPolicy: {
       title: "",
@@ -50,6 +50,11 @@ function SiteSettings() {
     },
 
     termsAndConditions: {
+      title: "",
+      content: "",
+    },
+
+    franchiseTermsAndConditions: {
       title: "",
       content: "",
     },
@@ -137,9 +142,9 @@ function SiteSettings() {
           },
 
           refundPolicy: {
-  title: settings.refundPolicy?.title || "",
-  content: settings.refundPolicy?.content || "",
-},
+            title: settings.refundPolicy?.title || "",
+            content: settings.refundPolicy?.content || "",
+          },
 
           privacyPolicy: {
             title: settings.privacyPolicy?.title || "",
@@ -149,6 +154,11 @@ function SiteSettings() {
           termsAndConditions: {
             title: settings.termsAndConditions?.title || "",
             content: settings.termsAndConditions?.content || "",
+          },
+
+          franchiseTermsAndConditions: {
+            title: settings.franchiseTermsAndConditions?.title || "",
+            content: settings.franchiseTermsAndConditions?.content || "",
           },
 
           becomeAffiliate: {
@@ -373,7 +383,11 @@ function SiteSettings() {
             <Input
               value={form.contactPage.companyTitle}
               onChange={(e) =>
-                handleNestedChange("contactPage", "companyTitle", e.target.value)
+                handleNestedChange(
+                  "contactPage",
+                  "companyTitle",
+                  e.target.value,
+                )
               }
               placeholder="Company Section Title"
             />
@@ -394,7 +408,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "contactPage",
                   "heroDescription",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="Hero Description"
@@ -409,7 +423,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "contactPage",
                   "companyAddress",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="Company Address"
@@ -447,7 +461,9 @@ function SiteSettings() {
                 key={index}
                 title={`Card ${index + 1}`}
                 removable={form.contactPage.topCards.length > 1}
-                onRemove={() => removeArrayItem("contactPage", "topCards", index)}
+                onRemove={() =>
+                  removeArrayItem("contactPage", "topCards", index)
+                }
               >
                 <div className="grid gap-4">
                   <Input
@@ -458,7 +474,7 @@ function SiteSettings() {
                         "topCards",
                         index,
                         "title",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     placeholder="Card Title"
@@ -469,29 +485,29 @@ function SiteSettings() {
                       index === 0
                         ? form.contactPage.callValue
                         : index === 1
-                        ? form.contactPage.emailValue
-                        : card.value
+                          ? form.contactPage.emailValue
+                          : card.value
                     }
                     onChange={(e) =>
                       index === 0
                         ? handleNestedChange(
                             "contactPage",
                             "callValue",
-                            e.target.value
+                            e.target.value,
                           )
                         : index === 1
-                        ? handleNestedChange(
-                            "contactPage",
-                            "emailValue",
-                            e.target.value
-                          )
-                        : handleArrayItemChange(
-                            "contactPage",
-                            "topCards",
-                            index,
-                            "value",
-                            e.target.value
-                          )
+                          ? handleNestedChange(
+                              "contactPage",
+                              "emailValue",
+                              e.target.value,
+                            )
+                          : handleArrayItemChange(
+                              "contactPage",
+                              "topCards",
+                              index,
+                              "value",
+                              e.target.value,
+                            )
                     }
                     placeholder="Card Value"
                   />
@@ -504,7 +520,7 @@ function SiteSettings() {
                         "topCards",
                         index,
                         "subtitle",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     placeholder="Card Subtitle"
@@ -551,7 +567,7 @@ function SiteSettings() {
                         "supportPoints",
                         index,
                         "title",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     placeholder="Point Title"
@@ -565,7 +581,7 @@ function SiteSettings() {
                         "supportPoints",
                         index,
                         "subtitle",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     placeholder="Point Subtitle"
@@ -608,7 +624,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "contactPage",
                   "faqsSubtitle",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="FAQ Section Subtitle"
@@ -632,7 +648,7 @@ function SiteSettings() {
                         "faqs",
                         index,
                         "question",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     placeholder="FAQ Question"
@@ -646,7 +662,7 @@ function SiteSettings() {
                         "faqs",
                         index,
                         "answer",
-                        e.target.value
+                        e.target.value,
                       )
                     }
                     placeholder="FAQ Answer"
@@ -659,46 +675,46 @@ function SiteSettings() {
         </SectionCard>
 
         <SectionCard title="Privacy Policy">
-  <div className="grid gap-4">
-    <Input
-      value={form.privacyPolicy.title}
-      onChange={(e) =>
-        handleNestedChange("privacyPolicy", "title", e.target.value)
-      }
-      placeholder="Privacy Policy Title"
-    />
+          <div className="grid gap-4">
+            <Input
+              value={form.privacyPolicy.title}
+              onChange={(e) =>
+                handleNestedChange("privacyPolicy", "title", e.target.value)
+              }
+              placeholder="Privacy Policy Title"
+            />
 
-    <Textarea
-      value={form.privacyPolicy.content}
-      onChange={(e) =>
-        handleNestedChange("privacyPolicy", "content", e.target.value)
-      }
-      placeholder="Privacy Policy Content"
-      rows="10"
-    />
-  </div>
-</SectionCard>
+            <Textarea
+              value={form.privacyPolicy.content}
+              onChange={(e) =>
+                handleNestedChange("privacyPolicy", "content", e.target.value)
+              }
+              placeholder="Privacy Policy Content"
+              rows="10"
+            />
+          </div>
+        </SectionCard>
 
-<SectionCard title="Refund Policy">
-  <div className="grid gap-4">
-    <Input
-      value={form.refundPolicy.title}
-      onChange={(e) =>
-        handleNestedChange("refundPolicy", "title", e.target.value)
-      }
-      placeholder="Refund Policy Title"
-    />
+        <SectionCard title="Refund Policy">
+          <div className="grid gap-4">
+            <Input
+              value={form.refundPolicy.title}
+              onChange={(e) =>
+                handleNestedChange("refundPolicy", "title", e.target.value)
+              }
+              placeholder="Refund Policy Title"
+            />
 
-    <Textarea
-      value={form.refundPolicy.content}
-      onChange={(e) =>
-        handleNestedChange("refundPolicy", "content", e.target.value)
-      }
-      placeholder="Refund Policy Content"
-      rows="10"
-    />
-  </div>
-</SectionCard>
+            <Textarea
+              value={form.refundPolicy.content}
+              onChange={(e) =>
+                handleNestedChange("refundPolicy", "content", e.target.value)
+              }
+              placeholder="Refund Policy Content"
+              rows="10"
+            />
+          </div>
+        </SectionCard>
 
         <SectionCard title="Terms & Conditions">
           <div className="grid gap-4">
@@ -708,7 +724,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "termsAndConditions",
                   "title",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="Terms Title"
@@ -720,10 +736,39 @@ function SiteSettings() {
                 handleNestedChange(
                   "termsAndConditions",
                   "content",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="Terms Content"
+              rows="10"
+            />
+          </div>
+        </SectionCard>
+
+        <SectionCard title="Franchise Terms & Conditions">
+          <div className="grid gap-4">
+            <Input
+              value={form.franchiseTermsAndConditions.title}
+              onChange={(e) =>
+                handleNestedChange(
+                  "franchiseTermsAndConditions",
+                  "title",
+                  e.target.value,
+                )
+              }
+              placeholder="Franchise Terms Title"
+            />
+
+            <Textarea
+              value={form.franchiseTermsAndConditions.content}
+              onChange={(e) =>
+                handleNestedChange(
+                  "franchiseTermsAndConditions",
+                  "content",
+                  e.target.value,
+                )
+              }
+              placeholder="Franchise Terms Content"
               rows="10"
             />
           </div>
@@ -758,7 +803,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "endUserLicenseAgreement",
                   "title",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="EULA Title"
@@ -770,7 +815,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "endUserLicenseAgreement",
                   "content",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="EULA Content"
@@ -808,7 +853,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "paymentTransferTerms",
                   "title",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="Payment Transfer Terms Title"
@@ -820,7 +865,7 @@ function SiteSettings() {
                 handleNestedChange(
                   "paymentTransferTerms",
                   "content",
-                  e.target.value
+                  e.target.value,
                 )
               }
               placeholder="Payment Transfer Terms Content"

@@ -2,18 +2,25 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import MobileBottomNav from "../components/videos/MobileBottomNav";
+import MobileAppHeader from "../components/videos/MobileAppHeader";
 import { API } from "../utils/api";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
-function PaymentTransferTermsAndConditions() {
+function FranchiseTermsAndConditions() {
   const [data, setData] = useState(null);
-  const navigate = useNavigate();
+
+  const pageBg =
+    "bg-[var(--mc-bg-main)] text-[var(--mc-text-main)] md:bg-white md:text-[#07111a]";
+  const cardBg =
+    "border border-[var(--mc-border)] bg-[var(--mc-bg-card)] text-[var(--mc-text-main)] md:border-slate-200 md:bg-white md:text-[#07111a]";
+  const headingText = "text-[var(--mc-text-main)] md:text-[#07111a]";
+  const bodyText = "text-[var(--mc-text-soft)] md:text-slate-700";
+  const mutedText = "text-[var(--mc-text-soft)] md:text-slate-600";
 
   useEffect(() => {
     axios.get(`${API}/site-settings`).then((res) => {
       if (res.data.success) {
-        setData(res.data.settings.paymentTransferTerms);
+        setData(res.data.settings.franchiseTermsAndConditions);
       }
     });
   }, []);
@@ -22,7 +29,7 @@ function PaymentTransferTermsAndConditions() {
     const content = data?.content || "";
     const lines = content
       .split("\n")
-      .map((line) => line.replace(/\t/g, "    ").trim())
+      .map((line) => line.trim())
       .filter((line) => line !== "");
 
     const blocks = [];
@@ -45,13 +52,19 @@ function PaymentTransferTermsAndConditions() {
 
     const isBullet = (line) => /^[-•*]\s+/.test(line);
     const isNumbered = (line) => /^\d+[\.\)]\s+/.test(line);
+
     const cleanBullet = (line) => line.replace(/^[-•*]\s+/, "").trim();
     const cleanNumber = (line) => line.replace(/^\d+[\.\)]\s+/, "").trim();
 
     const isHeadingLike = (line) => {
+      if (line.length > 80) return false;
       if (isBullet(line) || isNumbered(line)) return false;
+
       return (
-        line.endsWith(":") || /^[A-Z][A-Za-z0-9\s&()/,-]{2,60}$/.test(line)
+        line.endsWith(":") ||
+        (!line.includes(".") &&
+          line.split(" ").length <= 8 &&
+          /[A-Za-z]/.test(line))
       );
     };
 
@@ -92,38 +105,36 @@ function PaymentTransferTermsAndConditions() {
 
   return (
     <>
-      <Navbar />
+      <div className="hidden md:block">
+        <Navbar />
+      </div>
 
-      <div className="min-h-screen bg-white">
-        <div className="border-b border-slate-200 bg-slate-50">
-          <div className="mx-auto w-full max-w-[1380px] px-4 py-14 sm:px-6 lg:px-8">
-            {/* Mobile Back Button */}
-            <div className="mb-5 md:hidden">
-              <button
-                onClick={() => navigate(-1)}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-[var(--mc-border)] bg-[var(--mc-bg-card)] text-[var(--mc-text-main)] transition hover:scale-105 active:scale-95"
-              >
-                <ArrowLeft size={20} />
-              </button>
-            </div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#167a7a]">
-              Legal
+      <div className="md:hidden">
+        <MobileAppHeader />
+      </div>
+
+      <div className={`min-h-screen pb-24 md:pb-0 ${pageBg}`}>
+        <div className="border-b border-[var(--mc-border)] bg-[var(--mc-surface-gradient)] md:border-slate-200 md:bg-slate-50">
+          <div className="mx-auto w-full max-w-[1320px] px-4 py-10 sm:px-6 md:py-14 lg:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#13b7dc] md:text-sm md:text-[#167a7a]">
+              Franchise Legal
             </p>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-[#07111a] sm:text-4xl md:text-5xl">
-              {data?.title || "Payment Transfer Terms and Conditions"}
+
+            <h1 className={`mt-3 text-[30px] font-bold tracking-tight sm:text-4xl md:text-5xl ${headingText}`}>
+              {data?.title || "Franchise Terms & Conditions"}
             </h1>
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
-              Please review our payment transfer terms and conditions carefully
-              before initiating any payment.
+
+            <p className={`mt-4 max-w-3xl text-sm leading-7 sm:text-base ${mutedText}`}>
+              Please read these franchise terms carefully before joining the Multiclout Franchise Program.
             </p>
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-[1380px] px-4 py-10 sm:px-6 md:py-12 lg:px-8">
-          <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+        <div className="mx-auto w-full max-w-[1320px] px-4 py-6 sm:px-6 md:py-12 lg:px-8">
+          <div className={`rounded-[24px] p-5 shadow-sm sm:p-8 lg:p-10 md:rounded-[28px] ${cardBg}`}>
             {contentBlocks.length === 0 ? (
-              <p className="text-base text-slate-500">
-                Payment Transfer Terms content not available.
+              <p className={`text-base ${mutedText}`}>
+                Franchise Terms & Conditions content not available.
               </p>
             ) : (
               <div className="space-y-5">
@@ -132,7 +143,7 @@ function PaymentTransferTermsAndConditions() {
                     return (
                       <h2
                         key={index}
-                        className="pt-2 text-[22px] font-semibold leading-tight text-[#0b4f8a] sm:text-[24px]"
+                        className="pt-2 text-[20px] font-semibold leading-tight text-[#13b7dc] sm:text-[24px] md:text-[#0b4f8a]"
                       >
                         {block.text}
                       </h2>
@@ -143,7 +154,7 @@ function PaymentTransferTermsAndConditions() {
                     return (
                       <ul
                         key={index}
-                        className="list-disc space-y-2 pl-6 text-[16px] leading-8 text-slate-700 marker:text-[#167a7a]"
+                        className="list-disc space-y-2 pl-6 text-[15px] leading-8 text-[var(--mc-text-soft)] marker:text-[#13b7dc] md:text-[16px] md:text-slate-700 md:marker:text-[#167a7a]"
                       >
                         {block.items.map((item, itemIndex) => (
                           <li key={itemIndex}>{item}</li>
@@ -156,7 +167,7 @@ function PaymentTransferTermsAndConditions() {
                     return (
                       <ol
                         key={index}
-                        className="list-decimal space-y-3 pl-6 text-[16px] leading-8 text-slate-700 marker:font-semibold marker:text-[#167a7a]"
+                        className="list-decimal space-y-2 pl-6 text-[15px] leading-8 text-[var(--mc-text-soft)] marker:font-semibold marker:text-[#13b7dc] md:text-[16px] md:text-slate-700 md:marker:text-[#167a7a]"
                       >
                         {block.items.map((item, itemIndex) => (
                           <li key={itemIndex}>{item}</li>
@@ -168,7 +179,7 @@ function PaymentTransferTermsAndConditions() {
                   return (
                     <p
                       key={index}
-                      className="text-[16px] leading-8 text-slate-700"
+                      className={`text-[15px] leading-8 md:text-[16px] ${bodyText}`}
                     >
                       {block.text}
                     </p>
@@ -180,9 +191,15 @@ function PaymentTransferTermsAndConditions() {
         </div>
       </div>
 
-      <Footer />
+      <div className="hidden md:block">
+        <Footer />
+      </div>
+
+      <div className="md:hidden">
+        <MobileBottomNav />
+      </div>
     </>
   );
 }
 
-export default PaymentTransferTermsAndConditions;
+export default FranchiseTermsAndConditions;

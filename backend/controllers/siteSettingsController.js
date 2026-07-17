@@ -26,6 +26,14 @@ const getOrCreateSettings = async () => {
     shouldSave = true;
   }
 
+  if (!settings.franchiseTermsAndConditions) {
+    settings.franchiseTermsAndConditions = {
+      title: "Franchise Terms & Conditions",
+      content: "",
+    };
+    shouldSave = true;
+  }
+
   if (shouldSave) {
     await settings.save();
   }
@@ -59,7 +67,7 @@ const updateSiteSettings = async (req, res) => {
     const updatedSettings = await SiteSettings.findByIdAndUpdate(
       settings._id,
       { $set: req.body },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     res.status(200).json({
@@ -143,7 +151,7 @@ const updateContactEnquiryStatus = async (req, res) => {
     const enquiry = await ContactEnquiry.findByIdAndUpdate(
       req.params.id,
       { status },
-      { new: true }
+      { new: true },
     );
 
     if (!enquiry) {

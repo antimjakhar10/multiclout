@@ -199,7 +199,7 @@ function UserSubscription() {
         />
       </div>
 
-      <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-6 sm:p-7">
+      <div className="flex h-full flex-col rounded-[28px] border border-white/10 bg-white/[0.04] p-6 sm:p-7">
         <h3 className="text-xl font-bold text-white">Need help?</h3>
 
         <p className="mt-3 max-w-2xl text-sm leading-7 text-white/60">

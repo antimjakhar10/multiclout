@@ -17,6 +17,8 @@ import {
   Crown,
   Moon,
   Video,
+  Receipt,
+  FileText,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import {
@@ -39,16 +41,35 @@ const mobileNavLinks = [
   { label: "Home", path: "/", icon: Home },
   { label: "Creator Videos", path: "/creator-videos", icon: Video },
   { label: "Business Plan", path: "/business-plan", icon: BriefcaseBusiness },
+  { label: "Become a Member", path: "/become-a-member", icon: Crown },
   { label: "Tutorials", path: "/tutorials", icon: GraduationCap },
   { label: "Franchise", path: "/franchise", icon: Handshake },
   { label: "Blog", path: "/blog", icon: Newspaper },
   { label: "About Us", path: "/about", icon: Info },
   { label: "Contact", path: "/contact", icon: Phone },
-  { label: "Become a Member", path: "/become-a-member", icon: Crown },
+
   {
+    label: "Privacy Policy",
+    path: "/privacy-policy",
+    icon: ShieldCheck,
+  },
+
+  {
+    label: "Refund Policy",
+    path: "/refund-policy",
+    icon: Receipt,
+  },
+
+   {
     label: "Terms & Conditions",
     path: "/terms-and-conditions",
     icon: ShieldCheck,
+  },
+
+  {
+    label: "Franchise Terms & Conditions",
+    path: "/franchise-terms-and-conditions",
+    icon: FileText,
   },
 ];
 
@@ -109,7 +130,7 @@ function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 border-b shadow-sm backdrop-blur-xl"
+      className="sticky top-0 z-50 border-b shadow-sm backdrop-blur-xl pt-[env(safe-area-inset-top)]"
       style={{
         background: "var(--mc-nav-bg)",
         borderColor: "var(--mc-border)",
@@ -150,7 +171,7 @@ function Navbar() {
         <div className="hidden shrink-0 items-center gap-2 md:flex lg:gap-3">
           <a
             href="#"
-           className="hidden rounded-full border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-semibold !text-[#0f172a] transition-all duration-300 hover:border-[#167a7a] hover:bg-[#167a7a] hover:!text-white lg:inline-flex xl:px-6 xl:py-3"
+            className="hidden rounded-full border border-gray-300 bg-gray-100 px-4 py-2.5 text-sm font-semibold !text-[#0f172a] transition-all duration-300 hover:border-[#167a7a] hover:bg-[#167a7a] hover:!text-white lg:inline-flex xl:px-6 xl:py-3"
           >
             Download App
           </a>

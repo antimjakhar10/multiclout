@@ -17,6 +17,7 @@ import VideoDetail from "./pages/VideoDetail";
 import ContactPage from "./pages/ContactPage";
 import RefundPolicy from "./pages/RefundPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import FranchiseTermsAndConditions from "./pages/FranchiseTermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CourseDetail from "./pages/CourseDetail";
 import AboutUs from "./pages/AboutUs";
@@ -105,6 +106,10 @@ function App() {
           <Route
             path="/terms-and-conditions"
             element={<TermsAndConditions />}
+          />
+          <Route
+            path="/franchise-terms-and-conditions"
+            element={<FranchiseTermsAndConditions />}
           />
           <Route path="/become-an-affiliate" element={<BecomeAnAffiliate />} />
           <Route path="/payment-methods" element={<PaymentMethods />} />

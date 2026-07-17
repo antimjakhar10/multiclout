@@ -24,13 +24,19 @@ function MobileBottomNav() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-2 z-50 px-3 md:hidden"
       style={{
         background: "var(--mc-bg-soft)",
         borderColor: "var(--mc-border)",
+
+        // iPhone + Android Safe Area
+        paddingBottom: "max(env(safe-area-inset-bottom), 12px)",
+
+        // Navbar ki normal height
+        minHeight: "72px",
       }}
     >
-      <div className="grid grid-cols-3 px-3 py-2.5">
+      <div className="grid grid-cols-3 px-3 pt-2 pb-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item.to);
@@ -44,8 +50,8 @@ function MobileBottomNav() {
                 color: active ? "#22d3ee" : "var(--mc-text-soft)",
               }}
             >
-              <Icon size={18} />
-              <span className="mt-1">{item.label}</span>
+              <Icon size={20} />
+              <span className="mt-1 text-[12px]">{item.label}</span>
             </Link>
           );
         })}

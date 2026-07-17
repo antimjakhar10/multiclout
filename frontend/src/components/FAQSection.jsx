@@ -7,16 +7,29 @@ import { API } from "../utils/api";
 function FAQSection() {
   const [openIndex, setOpenIndex] = useState(0);
   const [faqs, setFaqs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchFaqs = async () => {
       try {
-        const res = await axios.get(
-          `${API}/faqs`
-        );
+        setLoading(true);
+
+        console.log("API URL =>", `${API}/faqs`);
+
+        const res = await axios.get(`${API}/faqs`);
+
+        console.log("FAQ Response =>", res.data);
+
         setFaqs(res.data.faqs || []);
       } catch (error) {
-        console.error("Error fetching faqs", error);
+        console.error("FAQ Error =>", error);
+
+        if (error.response) {
+          console.log("Status =>", error.response.status);
+          console.log("Data =>", error.response.data);
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -44,10 +57,10 @@ function FAQSection() {
           </p>
         </div>
 
-        {faqs.length === 0 ? (
-          <div className="py-10 text-center text-[var(--mc-text-soft)] md:text-slate-500">
-            Loading FAQs...
-          </div>
+        {loading ? (
+          <div className="py-10 text-center">Loading FAQs...</div>
+        ) : faqs.length === 0 ? (
+          <div className="py-10 text-center">No FAQs Found</div>
         ) : (
           <div className="flex flex-col gap-4">
             {faqs.map((faq, index) => {
